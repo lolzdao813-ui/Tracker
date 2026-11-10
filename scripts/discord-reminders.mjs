@@ -1,4 +1,5 @@
-import admin from "firebase-admin";
+import { initializeApp, cert } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const roomId = "22849ef54df441cab4da10069d2c7788";
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "{}");
@@ -8,8 +9,8 @@ if (!serviceAccount.project_id || !webhookUrl) {
   throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON or DISCORD_WEBHOOK_URL secret.");
 }
 
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
+initializeApp({ credential: cert(serviceAccount) });
+const db = getFirestore();
 
 const timeZone = "Asia/Jakarta";
 const today = new Intl.DateTimeFormat("en-CA", {
@@ -90,7 +91,7 @@ for (const debtDoc of debtsSnapshot.docs) {
     debtId: debtDoc.id,
     dueDate: debt.dueDate,
     reminderType,
-    sentAt: admin.firestore.FieldValue.serverTimestamp(),
+    sentAt: FieldValue.serverTimestamp(),
   });
   sent++;
 }
