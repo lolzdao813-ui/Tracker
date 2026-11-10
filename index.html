@@ -228,8 +228,9 @@ $("confirmPayment").addEventListener("click",async()=>{
  const amount=Number($("paymentAmount").value),date=$("paymentDate").value,note=$("paymentNote").value.trim();if(!payingId||amount<=0||!date){toast("Isi nominal dan tanggal pembayaran.");return}
  const d=debts.find(x=>x.id===payingId);
  try{
-  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments})});
-  await addDoc(collection(db,...roomPath(),"transactions"),{type:"expense",title:"Pembayaran utang: "+(d?.creditor||"Kreditur"),amount,date,category:"Pembayaran Utang",note:note||"Pembayaran utang otomatis",sourceDebtId:payingId,createdAt:serverTimestamp()});await logActivity("payment",d?.creditor||"Kreditur","Pembayaran "+money(amount)+" dicatat"+(note?" ("+note+")":"")+".");hideModal("paymentModal");toast("Pembayaran berhasil dicatat dan masuk ke pengeluaran.");
+  const expenseRef=doc(collection(db,...roomPath(),"transactions"));
+  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments});tx.set(expenseRef,{type:"expense",title:"Pembayaran utang: "+(d?.creditor||"Kreditur"),amount,date,category:"Pembayaran Utang",note:note||"Pembayaran utang otomatis",sourceDebtId:payingId,createdAt:serverTimestamp()})});
+  await logActivity("payment",d?.creditor||"Kreditur","Pembayaran "+money(amount)+" dicatat"+(note?" ("+note+")":"")+".");hideModal("paymentModal");toast("Pembayaran berhasil dicatat dan masuk ke pengeluaran.");
  }catch(err){console.error(err);toast(err.message==="Pembayaran melebihi sisa utang"?err.message:"Gagal mencatat pembayaran.")}
 });
 function showHistory(d){
