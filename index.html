@@ -60,6 +60,19 @@ body{font-size:15px}
 @keyframes spark-float{0%{transform:translateY(8px) scale(.3);opacity:0}40%{opacity:1}100%{transform:translateY(-17px) scale(1.1);opacity:0}}
 @media(prefers-reduced-motion:reduce){.celebrate-layer,.celebrate-card,.celebrate-face,.celebrate-spark{animation:none!important;transition:none!important}.celebrate-layer.show .celebrate-card{transform:none;opacity:1}}
 
+.page-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.bulk-modal{width:min(1100px,calc(100vw - 32px));max-height:88vh;overflow:auto}
+.bulk-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}
+.bulk-toolbar span{font-size:13px;color:var(--muted);font-weight:700}
+.bulk-table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.bulk-table{width:100%;min-width:900px;border-collapse:collapse}
+.bulk-table th{background:#f7f8fa;color:var(--muted);font-size:11px;text-align:left;padding:11px 9px;white-space:nowrap}
+.bulk-table td{padding:8px;border-top:1px solid var(--line);vertical-align:middle}
+.bulk-table input{width:100%;min-width:115px;padding:10px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px}
+.bulk-table .bulk-creditor{min-width:170px}.bulk-table .bulk-notes{min-width:150px}
+.bulk-remove{border:0;background:var(--redbg);color:var(--red);border-radius:8px;width:34px;height:34px;font-size:18px}
+.bulk-footnote{font-size:12px;color:var(--muted);margin-top:10px}
+@media(max-width:700px){.page-actions{width:100%;justify-content:flex-start}.bulk-modal{padding:18px}.bulk-modal .modal-foot{position:sticky;bottom:-18px;background:#fff;padding:14px 0 2px}}
 </style>
 </head>
 <body>
@@ -99,7 +112,7 @@ body{font-size:15px}
 </section>
 
 <section class="view" id="view-debts">
- <div class="page-title"><div><h2>Daftar Utang</h2><p>Kelola catatan, pembayaran, dan detail kreditur.</p></div><button class="btn primary" id="addDebtBtn">＋ Tambah utang</button></div>
+ <div class="page-title"><div><h2>Daftar Utang</h2><p>Kelola catatan, pembayaran, dan detail kreditur.</p></div><div class="page-actions"><button class="btn" id="bulkDebtBtn">＋ Input massal</button><button class="btn primary" id="addDebtBtn">＋ Tambah utang</button></div></div>
  <section class="panel">
   <div class="table-tools"><input class="search" id="searchInput" placeholder="Cari kreditur atau catatan..."><div class="filters">
    <button class="filter active" data-filter="all">Semua</button><button class="filter" data-filter="open">Belum lunas</button><button class="filter" data-filter="overdue">Terlambat</button><button class="filter" data-filter="paid">Lunas</button>
@@ -141,6 +154,13 @@ body{font-size:15px}
  </div><div class="modal-foot"><button type="button" class="btn" id="cancelDebt">Batal</button><button type="submit" class="btn primary" id="saveDebt">Simpan utang</button></div></form>
 </div></div>
 
+<div class="overlay" id="bulkDebtModal"><div class="modal bulk-modal">
+ <h3>Input utang massal</h3><p class="intro">Masukkan beberapa catatan sekaligus. Setiap baris akan disimpan sebagai utang terpisah dengan detail lengkap.</p>
+ <div class="bulk-toolbar"><span id="bulkRowCount">0 baris</span><button type="button" class="btn" id="addBulkRow">＋ Tambah baris</button></div>
+ <div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>Nama kreditur *</th><th>Nominal (Rp) *</th><th>Tanggal utang *</th><th>Jatuh tempo *</th><th>Catatan</th><th></th></tr></thead><tbody id="bulkDebtRows"></tbody></table></div>
+ <div class="bulk-footnote">Kolom bertanda * wajib diisi. Maksimal 200 utang dalam satu kali penyimpanan.</div>
+ <div class="modal-foot"><button type="button" class="btn" id="cancelBulkDebt">Batal</button><button type="button" class="btn primary" id="saveBulkDebt">Simpan semua utang</button></div>
+</div></div>
 <div class="overlay" id="paymentModal"><div class="modal">
  <h3>Catat pembayaran</h3><p class="intro" id="paymentIntro"></p>
  <div class="field"><label for="paymentAmount">Nominal pembayaran (Rp)</label><input id="paymentAmount" type="number" min="1" step="1"></div>
@@ -163,7 +183,7 @@ body{font-size:15px}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyA1URvsv35svGvVuNKURICpjmb9wZfA9v4",
@@ -259,6 +279,41 @@ function renderActivity(){
  $("activityList").innerHTML=Object.entries(groups).map(([day,items])=>'<div class="activity-day">'+escapeHtml(day.toUpperCase())+'</div>'+items.map(({a,when})=>'<div class="activity"><div class="activity-icon">'+(icon[a.type]||"•")+'</div><div class="activity-text"><strong>'+escapeHtml(a.creditor||"Catatan utang")+'</strong><br>'+escapeHtml(a.detail||"Aktivitas diperbarui")+'</div><div class="activity-time">'+(when?when.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}):"Baru saja")+'</div></div>').join("")).join("");
 }
 function render(){renderDashboard();renderTable();renderActivity();renderFinance();renderBudgets();renderGoals();renderReports();if($("view-calendar").classList.contains("active"))renderCalendar()}
+function makeBulkRow(){
+ const tr=document.createElement("tr");
+ tr.innerHTML='<td><input class="bulk-creditor" maxlength="80" placeholder="Nama kreditur" aria-label="Nama kreditur" required></td><td><input class="bulk-amount" type="number" min="1" step="1" placeholder="Nominal" aria-label="Nominal utang" required></td><td><input class="bulk-date" type="date" aria-label="Tanggal utang" required></td><td><input class="bulk-due" type="date" aria-label="Tanggal jatuh tempo" required></td><td><input class="bulk-notes" maxlength="500" placeholder="Catatan (opsional)" aria-label="Catatan"></td><td><button type="button" class="bulk-remove" aria-label="Hapus baris" title="Hapus baris">×</button></td>';
+ tr.querySelector(".bulk-date").value=today();tr.querySelector(".bulk-due").value=today();
+ tr.querySelector(".bulk-remove").addEventListener("click",()=>{tr.remove();updateBulkCount()});
+ $("bulkDebtRows").appendChild(tr);updateBulkCount();
+}
+function updateBulkCount(){$("bulkRowCount").textContent=$("bulkDebtRows").children.length+" baris"}
+function openBulkDebt(){
+ $("bulkDebtRows").innerHTML="";for(let i=0;i<3;i++)makeBulkRow();showModal("bulkDebtModal");
+}
+$("bulkDebtBtn").addEventListener("click",openBulkDebt);
+$("addBulkRow").addEventListener("click",()=>{if($("bulkDebtRows").children.length>=200){toast("Maksimal 200 baris.");return}makeBulkRow()});
+$("cancelBulkDebt").addEventListener("click",()=>hideModal("bulkDebtModal"));
+$("saveBulkDebt").addEventListener("click",async()=>{
+ const rows=[...$("bulkDebtRows").querySelectorAll("tr")];
+ if(!rows.length){toast("Tambahkan minimal satu baris utang.");return}
+ if(rows.length>200){toast("Maksimal 200 utang dalam satu kali penyimpanan.");return}
+ const entries=rows.map((tr,i)=>({row:tr,creditor:tr.querySelector(".bulk-creditor").value.trim(),amount:Number(tr.querySelector(".bulk-amount").value),debtDate:tr.querySelector(".bulk-date").value,dueDate:tr.querySelector(".bulk-due").value,notes:tr.querySelector(".bulk-notes").value.trim(),index:i+1}));
+ const invalid=entries.find(x=>!x.creditor||!Number.isFinite(x.amount)||x.amount<=0||!x.debtDate||!x.dueDate||x.dueDate<x.debtDate);
+ if(invalid){toast("Periksa baris "+invalid.index+": lengkapi data wajib dan pastikan jatuh tempo tidak sebelum tanggal utang.");invalid.row.scrollIntoView({behavior:"smooth",block:"center"});return}
+ const btn=$("saveBulkDebt");btn.disabled=true;btn.textContent="Menyimpan...";
+ try{
+  const batch=writeBatch(db);
+  entries.forEach(d=>{
+   const debtDoc=doc(collection(db,...roomPath(),"debts"));
+   batch.set(debtDoc,{creditor:d.creditor,amount:d.amount,debtDate:d.debtDate,dueDate:d.dueDate,notes:d.notes,totalPaid:0,payments:[],createdAt:serverTimestamp()});
+   const activityDoc=doc(collection(db,...roomPath(),"activities"));
+   batch.set(activityDoc,{type:"created",creditor:d.creditor,detail:"Catatan utang baru ditambahkan sebesar "+money(d.amount)+" (input massal).",createdAt:serverTimestamp(),createdAtClient:new Date().toISOString()});
+  });
+  await batch.commit();hideModal("bulkDebtModal");$("bulkDebtRows").innerHTML="";updateBulkCount();
+  toast(entries.length+" utang berhasil disimpan.");showCelebration("sad","Nooo… "+entries.length+" utang baru!","Semua catatan berhasil masuk ke Tracker.");
+ }catch(err){console.error(err);toast("Gagal menyimpan utang massal. Tidak ada data yang disimpan jika proses batch gagal.");}
+ finally{btn.disabled=false;btn.textContent="Simpan semua utang"}
+});
 function resetDebtForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("debtModalTitle").textContent="Tambah utang";$("saveDebt").textContent="Simpan utang"}
 function openAdd(){resetDebtForm();showModal("debtModal")}
 function openEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("notes").value=d.notes||"";$("debtModalTitle").textContent="Edit utang";$("saveDebt").textContent="Simpan perubahan";showModal("debtModal")}
