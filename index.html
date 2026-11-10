@@ -266,7 +266,7 @@ body:after{content:"";position:fixed;z-index:-1;pointer-events:none;width:560px;
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,writeBatch,serverTimestamp,getDocs,query,where} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyA1URvsv35svGvVuNKURICpjmb9wZfA9v4",
@@ -438,7 +438,7 @@ $("debtTableBody").addEventListener("click",async e=>{
  if(b.dataset.act==="pay")openPayment(d.id);
  if(b.dataset.act==="history")showHistory(d);
  if(b.dataset.act==="edit")openEdit(d);
- if(b.dataset.act==="delete"&&confirm("Hapus catatan utang "+d.creditor+" beserta riwayat pembayarannya?")){try{await logActivity("deleted",d.creditor,"Catatan utang dihapus.");await deleteDoc(debtRef(d.id));toast("Catatan dihapus.")}catch(err){toast("Gagal menghapus catatan.")}}
+ if(b.dataset.act==="delete"&&confirm("Hapus catatan utang "+d.creditor+" beserta riwayat pembayarannya? Transaksi pengeluaran otomatis dari pembayaran utang ini juga akan dihapus.")){try{const linkedTx=await getDocs(query(collection(db,...roomPath(),"transactions"),where("sourceDebtId","==",d.id)));const batch=writeBatch(db);linkedTx.forEach(txDoc=>batch.delete(txDoc.ref));batch.delete(debtRef(d.id));await batch.commit();await logActivity("deleted",d.creditor,"Catatan utang dan "+linkedTx.size+" transaksi pembayaran terkait dihapus.");toast("Catatan utang dan "+linkedTx.size+" transaksi pembayaran terkait berhasil dihapus.")}catch(err){console.error(err);toast("Gagal menghapus catatan dan transaksi terkait.")}}
 });
 document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{activeFilter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderTable()}));
 $("searchInput").addEventListener("input",renderTable);
