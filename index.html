@@ -248,7 +248,7 @@ $("calendarGrid").addEventListener("click",e=>{const cell=e.target.closest(".cal
 function listen(){
  if(unsubDebts)unsubDebts();if(unsubActivities)unsubActivities();
  unsubDebts=onSnapshot(collection(db,...roomPath(),"debts"),snap=>{debts=snap.docs.map(x=>({id:x.id,...x.data()}));render()},err=>{console.error(err);toast("Tidak dapat membaca data utang. Periksa Firestore Rules.")});
- unsubActivities=onSnapshot(collection(db,...roomPath(),"activities"),snap=>{activities=snap.docs.map(x=>({id:x.id,...x.data()}));activities.sort((a,b)=>{const aa=a.createdAt?.toMillis?a.createdAt.toMillis():new Date(a.createdAtClient||0).getTime();const bb=b.createdAt?.toMillis?b.createdAt.toMillis():new Date(b.createdAtClient||0).getTime();return bb-aa});renderActivity()},err=>{console.warn("Activity listener unavailable. Check Firestore Rules.",err);$("activityList").innerHTML='<div class="empty">Aktivitas belum dapat dimuat. Perbarui Firestore Rules untuk mengaktifkan menu ini.</div>'});
+ unsubActivities=onSnapshot(collection(db,...roomPath(),"activities"),snap=>{activities=snap.docs.map(x=>({id:x.id,...x.data()}));activities.sort((a,b)=>{const aa=a.createdAt?.toMillis?a.createdAt.toMillis():new Date(a.createdAtClient||0).getTime();const bb=b.createdAt?.toMillis?b.createdAt.toMillis():new Date(b.createdAtClient||0).getTime();return bb-aa});renderActivity();renderDashboard()},err=>{console.warn("Activity listener unavailable. Check Firestore Rules.",err);$("activityList").innerHTML='<div class="empty">Aktivitas belum dapat dimuat. Perbarui Firestore Rules untuk mengaktifkan menu ini.</div>'});
  render();goTab("dashboard");
 }
 async function boot(){
