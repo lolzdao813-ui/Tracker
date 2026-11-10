@@ -1,230 +1,232 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#111827" />
-  <title>Debt Tracker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#f5f6fa;--surface:#fff;--ink:#172033;--muted:#778096;--line:#e8ebf2;--primary:#635bff;--primary-dark:#5048e5;--green:#16865b;--green-bg:#e8f7ef;--red:#c74646;--red-bg:#fff0f0;--amber:#a56a09;--amber-bg:#fff6e5;--shadow:0 12px 36px rgba(24,32,51,.07)}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
-    .wrap{max-width:1120px;margin:auto;padding:28px 22px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;background:var(--primary);color:white;display:grid;place-items:center;font-size:22px;font-weight:800;box-shadow:0 8px 18px #635bff40}.brand h1{font:800 21px Manrope;margin:0;letter-spacing:-.6px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.actions{display:flex;gap:9px;flex-wrap:wrap}
-    .btn{border:0;border-radius:11px;padding:11px 15px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s}.btn-primary{background:var(--primary);color:white}.btn-primary:hover{background:var(--primary-dark)}.btn-light{background:white;border:1px solid var(--line);color:var(--ink)}.btn-danger{background:var(--red-bg);color:var(--red)}.btn-small{padding:8px 10px;font-size:12px;border-radius:9px}
-    .hero{background:linear-gradient(120deg,#211d58,#635bff);border-radius:22px;padding:26px 28px;color:white;margin-bottom:18px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:230px;height:230px;border:1px solid #ffffff22;border-radius:50%;right:-60px;top:-110px;box-shadow:0 0 0 35px #ffffff0c,0 0 0 70px #ffffff08}.hero h2{font:800 23px Manrope;margin:0 0 6px;position:relative;z-index:1}.hero p{margin:0;color:#d8d6ff;font-size:13px;position:relative;z-index:1}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:22px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:17px 18px;box-shadow:0 3px 12px #17203305}.stat .label{font-size:12px;color:var(--muted);font-weight:600}.stat .value{font:800 21px Manrope;margin-top:9px;letter-spacing:-.5px}.stat .sub{font-size:11px;color:var(--muted);margin-top:4px}
-    .content{display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start}.panel{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:20px;box-shadow:0 4px 16px #17203305}.panel h3{font:800 16px Manrope;margin:0 0 17px}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#505a70}.field input,.field textarea{width:100%;border:1px solid #dfe3ec;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);outline:none;font-size:13px}.field input:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px #635bff18}.field textarea{resize:vertical;min-height:65px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-actions{display:flex;gap:8px}.form-actions .btn{flex:1}
-    .list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.list-head h3{margin:0}.filters{display:flex;gap:7px;flex-wrap:wrap}.filter{border:1px solid var(--line);background:white;color:var(--muted);border-radius:20px;padding:7px 11px;font-size:11px;font-weight:700}.filter.active{background:#efefff;border-color:#d9d7ff;color:var(--primary)}.search{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:13px;font-size:13px;outline:none}.debt-list{display:grid;gap:10px}.debt{border:1px solid var(--line);border-radius:14px;padding:15px}.debt-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.creditor{font-weight:800;font-size:14px}.amount{font:800 18px Manrope;margin-top:5px;letter-spacing:-.4px}.meta{display:flex;gap:13px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:11px}.meta b{color:#4f586b}.pill{font-size:10px;font-weight:800;padding:6px 9px;border-radius:20px;white-space:nowrap}.pill-open{color:var(--amber);background:var(--amber-bg)}.pill-overdue{color:var(--red);background:var(--red-bg)}.pill-paid{color:var(--green);background:var(--green-bg)}.progress{height:6px;background:#edf0f5;border-radius:9px;margin-top:12px;overflow:hidden}.progress span{display:block;height:100%;background:var(--primary);border-radius:9px}.debt-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.empty{text-align:center;padding:38px 15px;color:var(--muted);border:1px dashed #dfe3ec;border-radius:13px;font-size:13px}.empty strong{display:block;color:var(--ink);margin-bottom:5px}
-    .notice{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5}.roomline{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;margin-top:14px}.dot{width:7px;height:7px;border-radius:50%;background:#20b477}.overlay{position:fixed;inset:0;background:#10162980;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.overlay.show{display:flex}.modal{background:white;border-radius:18px;width:min(440px,100%);padding:22px;box-shadow:var(--shadow)}.modal h3{font:800 18px Manrope;margin:0 0 7px}.modal p{font-size:12px;color:var(--muted);margin:0 0 17px;line-height:1.5}.modal .field{margin-bottom:12px}.modal-actions{display:flex;gap:8px;margin-top:17px}.modal-actions .btn{flex:1}.setup{max-width:560px;margin:9vh auto;background:white;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow);text-align:center}.setup .logo{margin:0 auto 15px}.setup h2{font:800 24px Manrope;margin:0 0 9px}.setup p{color:var(--muted);font-size:13px;line-height:1.6}.setup .btn{margin-top:10px}.hidden{display:none!important}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#172033;color:white;padding:11px 16px;border-radius:10px;font-size:12px;box-shadow:var(--shadow);z-index:20;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
-    @media(max-width:850px){.content{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:540px){.wrap{padding:18px 13px 40px}.top{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions .btn{flex:1}.hero{padding:22px}.hero h2{font-size:20px}.stat{padding:14px}.stat .value{font-size:17px}.panel{padding:16px}.list-head{align-items:flex-start;flex-direction:column}.filters{width:100%}.filter{flex:1}.two{grid-template-columns:1fr 1fr}}
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f8fa">
+<title>Debt Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f8fa;--paper:#fff;--ink:#202735;--muted:#77808f;--line:#e7e9ee;--navy:#25364b;--navy2:#344a63;--green:#247a55;--greenbg:#eaf5ef;--red:#b94747;--redbg:#fbefef;--amber:#986514;--amberbg:#fbf4e7;--blue:#365f89;--bluebg:#edf3f8;--shadow:0 2px 8px rgba(24,35,50,.035)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px "DM Sans",sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}.shell{max-width:1240px;margin:auto;padding:26px 28px 60px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font:700 17px Manrope}.brand h1{font:800 19px Manrope;letter-spacing:-.5px;margin:0}.brand p{font-size:11px;color:var(--muted);margin:3px 0 0}.top-actions{display:flex;gap:8px}.btn{border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:9px 13px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn:hover{background:#f5f6f8}.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}.btn.primary:hover{background:var(--navy2)}.btn.danger{color:var(--red);background:var(--redbg);border-color:#f2dddd}.btn.small{padding:6px 9px;font-size:11px}.tabs{display:flex;gap:5px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}.tab{padding:12px 15px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-weight:700;font-size:12px;white-space:nowrap}.tab.active{color:var(--navy);border-bottom-color:var(--navy)}.view{display:none}.view.active{display:block}.page-title{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin:0 0 18px}.page-title h2{font:800 21px Manrope;letter-spacing:-.5px;margin:0}.page-title p{color:var(--muted);font-size:12px;margin:5px 0 0}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 17px;box-shadow:var(--shadow)}.stat-label{font-size:11px;color:var(--muted);font-weight:600}.stat-value{font:800 19px Manrope;margin-top:8px;letter-spacing:-.4px}.stat-foot{font-size:10px;color:var(--muted);margin-top:4px}.grid-main{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:17px;box-shadow:var(--shadow);min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.panel-head h3{font:700 13px Manrope;margin:0}.panel-head a{font-size:11px;color:var(--blue);font-weight:700;text-decoration:none}.due-list{display:grid;gap:0}.due-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.due-row:first-child{border-top:0;padding-top:2px}.due-name{font-weight:700;font-size:12px}.due-date{font-size:10px;color:var(--muted);margin-top:4px}.due-amount{text-align:right;font-weight:700;font-size:12px}.badge{display:inline-block;padding:4px 7px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap}.badge.open{color:var(--amber);background:var(--amberbg)}.badge.overdue{color:var(--red);background:var(--redbg)}.badge.paid{color:var(--green);background:var(--greenbg)}.badge.info{color:var(--blue);background:var(--bluebg)}.empty{padding:30px 14px;text-align:center;color:var(--muted);font-size:12px}.table-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap}.search{width:min(280px,100%);border:1px solid var(--line);border-radius:7px;background:#fff;padding:9px 11px;font-size:12px;outline:none}.search:focus,.field input:focus,.field textarea:focus,.field select:focus{border-color:#8798aa;box-shadow:0 0 0 2px #8798aa20}.filters{display:flex;gap:5px;flex-wrap:wrap}.filter{border:1px solid var(--line);border-radius:5px;padding:7px 9px;background:#fff;color:var(--muted);font-size:10px;font-weight:700}.filter.active{background:#edf1f5;color:var(--navy);border-color:#d7dee6}.table-wrap{overflow-x:auto}.debt-table{width:100%;border-collapse:collapse;min-width:720px}.debt-table th{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);font-size:10px;color:var(--muted);font-weight:700;white-space:nowrap}.debt-table td{padding:12px 9px;border-bottom:1px solid #eff0f3;font-size:11px;vertical-align:middle}.debt-table tr:last-child td{border-bottom:0}.person{font-weight:700;font-size:12px}.subtext{font-size:10px;color:var(--muted);margin-top:4px}.money{font-weight:700;white-space:nowrap}.row-actions{display:flex;gap:5px;white-space:nowrap}.progress{height:4px;background:#edf0f3;border-radius:4px;margin-top:6px;overflow:hidden;min-width:72px}.progress span{display:block;height:100%;background:#637b92}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{margin-bottom:12px}.field.full{grid-column:1/-1}.field label{display:block;font-size:11px;font-weight:700;color:#596273;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:7px;padding:10px;background:#fff;font-size:12px;outline:none;color:var(--ink)}.field textarea{min-height:65px;resize:vertical}.form-actions{display:flex;justify-content:flex-end;gap:8px}.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.calendar-head strong{font:700 15px Manrope}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}.cal-cell{min-height:105px;padding:8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}.cal-cell.head{min-height:0;background:#f7f8fa;color:var(--muted);font-size:10px;font-weight:700;text-align:center;padding:9px 3px}.cal-cell.muted{background:#fafafa;color:#b5bbc4}.cal-num{font-size:11px;font-weight:700}.cal-items{display:grid;gap:4px;margin-top:6px}.cal-item{border-left:2px solid #b17a27;background:var(--amberbg);padding:4px 5px;border-radius:2px;font-size:9px;line-height:1.3;overflow:hidden}.cal-item.paid{border-color:var(--green);background:var(--greenbg)}.cal-item.overdue{border-color:var(--red);background:var(--redbg)}.activity-list{display:grid}.activity{display:grid;grid-template-columns:30px 1fr auto;gap:10px;padding:13px 0;border-bottom:1px solid var(--line);align-items:start}.activity:last-child{border:0}.activity-icon{width:27px;height:27px;border-radius:50%;background:#edf1f5;color:var(--navy);display:grid;place-items:center;font-size:11px;font-weight:700}.activity-text{font-size:11px;line-height:1.5}.activity-text strong{font-weight:700}.activity-time{font-size:10px;color:var(--muted);white-space:nowrap}.overlay{display:none;position:fixed;inset:0;background:#17202d66;z-index:30;align-items:center;justify-content:center;padding:16px}.overlay.show{display:flex}.modal{width:min(510px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:11px;padding:21px;box-shadow:0 15px 45px #17202d30}.modal h3{font:800 16px Manrope;margin:0 0 5px}.modal .intro{font-size:11px;color:var(--muted);margin:0 0 17px;line-height:1.5}.modal-foot{display:flex;justify-content:flex-end;gap:7px;margin-top:14px}.history-line{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:11px}.history-line:last-child{border:0}.history-line strong{display:block;margin-bottom:3px}.room-note{font-size:10px;color:var(--muted);margin-top:16px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#26364a;color:#fff;padding:10px 14px;border-radius:6px;font-size:11px;z-index:50;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}.hidden{display:none!important}
+@media(max-width:850px){.shell{padding:20px 16px 45px}.stats{grid-template-columns:repeat(2,1fr)}.grid-main{grid-template-columns:1fr}}@media(max-width:560px){.shell{padding:16px 12px 36px}.topbar{align-items:flex-start}.brand p{max-width:180px}.top-actions{gap:5px}.top-actions .btn{padding:8px;font-size:10px}.page-title{align-items:flex-start;flex-direction:column}.stat{padding:13px}.stat-value{font-size:16px}.cal-cell{min-height:78px;padding:5px 3px}.cal-item{font-size:8px;padding:3px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.activity{grid-template-columns:27px 1fr}.activity-time{grid-column:2}.tabs{margin-right:-12px}}
+</style>
 </head>
 <body>
-  <main class="wrap">
-    <section id="setup" class="setup hidden">
-      <div class="logo">₿</div>
-      <h2>Debt Tracker</h2>
-      <p>Buat satu ruang bersama untuk mencatat utang dan pembayaran. Setelah ruang dibuat, bagikan tautannya ke pasangan agar kalian melihat data yang sama di perangkat masing-masing.</p>
-      <button id="createRoomBtn" class="btn btn-primary">Buat ruang bersama</button>
-      <p class="notice">Tidak ada halaman login. Aplikasi menggunakan autentikasi anonim di belakang layar untuk mengakses database.</p>
-    </section>
+<main class="shell">
+<header class="topbar">
+ <div class="brand"><div class="mark">DT</div><div><h1>Debt Tracker</h1><p>Ruang pencatatan utang bersama</p></div></div>
+ <div class="top-actions"><button class="btn" id="shareBtn">Bagikan ruang</button><button class="btn" id="exportBtn">Export Excel ↓</button></div>
+</header>
+<nav class="tabs">
+ <button class="tab active" data-tab="dashboard">Ringkasan</button>
+ <button class="tab" data-tab="debts">Daftar Utang</button>
+ <button class="tab" data-tab="calendar">Kalender</button>
+ <button class="tab" data-tab="activity">Aktivitas</button>
+</nav>
 
-    <section id="app" class="hidden">
-      <header class="top">
-        <div class="brand"><div class="logo">₿</div><div><h1>Debt Tracker</h1><p>Catatan utang pribadi & ruang bersama</p></div></div>
-        <div class="actions">
-          <button id="shareBtn" class="btn btn-light">↗ Bagikan ruang</button>
-          <button id="exportBtn" class="btn btn-light">↓ Export Excel</button>
-        </div>
-      </header>
-      <section class="hero">
-        <h2>Kontrol utang, lebih teratur.</h2>
-        <p>Catat kewajiban, pantau jatuh tempo, dan perbarui pembayaran bersama.</p>
-      </section>
-      <section class="summary">
-        <div class="stat"><div class="label">Total Utang Awal</div><div class="value" id="totalDebt">Rp0</div><div class="sub">Akumulasi seluruh catatan</div></div>
-        <div class="stat"><div class="label">Sudah Dibayar</div><div class="value" id="totalPaid">Rp0</div><div class="sub">Akumulasi pembayaran</div></div>
-        <div class="stat"><div class="label">Sisa Utang</div><div class="value" id="remainingDebt">Rp0</div><div class="sub">Kewajiban yang belum lunas</div></div>
-        <div class="stat"><div class="label">Belum Lunas</div><div class="value" id="unpaidCount">0</div><div class="sub">Catatan aktif</div></div>
-      </section>
-      <section class="content">
-        <aside class="panel">
-          <h3 id="formTitle">＋ Tambah Utang</h3>
-          <form id="debtForm">
-            <div class="field"><label for="creditor">Nama kreditur *</label><input id="creditor" required maxlength="80" placeholder="Contoh: Budi / Bank ABC"></div>
-            <div class="field"><label for="amount">Nominal utang (Rp) *</label><input id="amount" type="number" min="1" step="1" required placeholder="Contoh: 1500000"></div>
-            <div class="two">
-              <div class="field"><label for="debtDate">Tanggal utang *</label><input id="debtDate" type="date" required></div>
-              <div class="field"><label for="dueDate">Jatuh tempo *</label><input id="dueDate" type="date" required></div>
-            </div>
-            <div class="field"><label for="notes">Catatan (opsional)</label><textarea id="notes" maxlength="500" placeholder="Keterangan tambahan..."></textarea></div>
-            <div class="form-actions"><button type="submit" class="btn btn-primary" id="saveBtn">Simpan utang</button><button type="button" class="btn btn-light hidden" id="cancelEditBtn">Batal</button></div>
-          </form>
-          <div class="roomline"><span class="dot"></span><span>Sinkronisasi ruang aktif</span></div>
-          <p class="notice">Perubahan akan tampil otomatis pada perangkat lain yang membuka tautan ruang yang sama.</p>
-        </aside>
-        <section class="panel">
-          <div class="list-head"><h3>Daftar Utang</h3><div class="filters">
-            <button class="filter active" data-filter="all">Semua</button><button class="filter" data-filter="open">Belum lunas</button><button class="filter" data-filter="overdue">Terlambat</button><button class="filter" data-filter="paid">Lunas</button>
-          </div></div>
-          <input id="searchInput" class="search" placeholder="Cari nama kreditur atau catatan...">
-          <div id="debtList" class="debt-list"><div class="empty">Memuat data...</div></div>
-        </section>
-      </section>
-    </section>
-  </main>
+<section class="view active" id="view-dashboard">
+ <div class="page-title"><div><h2>Ringkasan</h2><p>Gambaran kondisi utang dan jadwal pembayaran.</p></div><button class="btn primary" id="quickAdd">＋ Tambah utang</button></div>
+ <div class="stats">
+  <div class="stat"><div class="stat-label">Total utang awal</div><div class="stat-value" id="totalDebt">Rp0</div><div class="stat-foot">Akumulasi semua catatan</div></div>
+  <div class="stat"><div class="stat-label">Total dibayar</div><div class="stat-value" id="totalPaid">Rp0</div><div class="stat-foot">Pembayaran yang sudah dicatat</div></div>
+  <div class="stat"><div class="stat-label">Sisa utang</div><div class="stat-value" id="remainingDebt">Rp0</div><div class="stat-foot">Kewajiban yang belum lunas</div></div>
+  <div class="stat"><div class="stat-label">Belum lunas</div><div class="stat-value" id="unpaidCount">0</div><div class="stat-foot">Termasuk yang terlambat</div></div>
+ </div>
+ <div class="grid-main">
+  <section class="panel"><div class="panel-head"><h3>Jatuh tempo terdekat</h3><a href="#" data-goto="calendar">Lihat kalender →</a></div><div id="upcomingList" class="due-list"><div class="empty">Memuat data...</div></div></section>
+  <section class="panel"><div class="panel-head"><h3>Ringkasan pembayaran</h3></div><div id="paymentSummary"></div></section>
+ </div>
+</section>
 
-  <div id="modalOverlay" class="overlay">
-    <div class="modal">
-      <h3 id="modalTitle">Catat pembayaran</h3>
-      <p id="modalDescription">Masukkan nominal pembayaran. Sisa utang akan dihitung otomatis.</p>
-      <div class="field"><label for="paymentAmount">Nominal pembayaran (Rp)</label><input id="paymentAmount" type="number" min="1" step="1" placeholder="Nominal pembayaran"></div>
-      <div class="field"><label for="paymentDate">Tanggal pembayaran</label><input id="paymentDate" type="date"></div>
-      <div class="field"><label for="paymentNote">Catatan pembayaran (opsional)</label><input id="paymentNote" maxlength="200" placeholder="Contoh: Cicilan pertama"></div>
-      <div class="modal-actions"><button id="closeModalBtn" class="btn btn-light">Batal</button><button id="confirmPaymentBtn" class="btn btn-primary">Simpan pembayaran</button></div>
-    </div>
-  </div>
-  <div id="toast" class="toast"></div>
+<section class="view" id="view-debts">
+ <div class="page-title"><div><h2>Daftar Utang</h2><p>Kelola catatan, pembayaran, dan detail kreditur.</p></div><button class="btn primary" id="addDebtBtn">＋ Tambah utang</button></div>
+ <section class="panel">
+  <div class="table-tools"><input class="search" id="searchInput" placeholder="Cari kreditur atau catatan..."><div class="filters">
+   <button class="filter active" data-filter="all">Semua</button><button class="filter" data-filter="open">Belum lunas</button><button class="filter" data-filter="overdue">Terlambat</button><button class="filter" data-filter="paid">Lunas</button>
+  </div></div>
+  <div class="table-wrap"><table class="debt-table"><thead><tr><th>KREDITUR</th><th>UTANG AWAL</th><th>DIBAYAR</th><th>SISA UTANG</th><th>JATUH TEMPO</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody id="debtTableBody"><tr><td colspan="7" class="empty">Memuat data...</td></tr></tbody></table></div>
+ </section>
+</section>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, addDoc, onSnapshot, updateDoc, deleteDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+<section class="view" id="view-calendar">
+ <div class="page-title"><div><h2>Kalender jatuh tempo</h2><p>Pantau tanggal pembayaran dalam satu tampilan.</p></div></div>
+ <section class="panel">
+  <div class="calendar-head"><button class="btn" id="prevMonth">← Sebelumnya</button><strong id="monthLabel"></strong><button class="btn" id="nextMonth">Berikutnya →</button></div>
+  <div class="calendar-grid" id="calendarGrid"></div>
+  <div class="room-note">Tanggal pada kalender menunjukkan jatuh tempo setiap catatan utang. Pilih bulan untuk melihat jadwalnya.</div>
+ </section>
+</section>
 
-    // GANTI dengan konfigurasi Firebase milikmu dari Firebase Console > Project settings > Your apps.
-    const firebaseConfig = {
-      apiKey: "AIzaSyA1URvsv35svGvVuNKURICpjmb9wZfA9v4",
-      authDomain: "tracker-f4af2.firebaseapp.com",
-      projectId: "tracker-f4af2",
-      storageBucket: "tracker-f4af2.firebasestorage.app",
-      messagingSenderId: "784405308091",
-      appId: "1:784405308091:web:ba8f9d9e395264bbe3ff9e"
-    };
+<section class="view" id="view-activity">
+ <div class="page-title"><div><h2>Aktivitas</h2><p>Riwayat perubahan dan pembayaran di ruang bersama.</p></div></div>
+ <section class="panel"><div class="panel-head"><h3>Aktivitas terbaru</h3></div><div id="activityList" class="activity-list"><div class="empty">Belum ada aktivitas.</div></div></section>
+</section>
+</main>
 
-    const $ = id => document.getElementById(id);
-    const rupiah = n => new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n)||0);
-    const today = () => new Date().toLocaleDateString("en-CA");
-    const dateText = s => s ? new Date(s+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"}) : "-";
-    const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-    let db, roomId, debts = [], unsubscribe = null, filter = "all", editingId = null, payingId = null;
+<div class="overlay" id="debtModal"><div class="modal">
+ <h3 id="debtModalTitle">Tambah utang</h3><p class="intro">Isi informasi kreditur dan tanggal pembayaran.</p>
+ <form id="debtForm"><div class="form-grid">
+  <div class="field full"><label for="creditor">Nama kreditur *</label><input id="creditor" required maxlength="80" placeholder="Nama orang atau pihak pemberi pinjaman"></div>
+  <div class="field"><label for="amount">Nominal utang (Rp) *</label><input id="amount" type="number" min="1" step="1" required></div>
+  <div class="field"><label for="debtDate">Tanggal utang *</label><input id="debtDate" type="date" required></div>
+  <div class="field"><label for="dueDate">Tanggal jatuh tempo *</label><input id="dueDate" type="date" required></div>
+  <div class="field full"><label for="notes">Catatan (opsional)</label><textarea id="notes" maxlength="500" placeholder="Keterangan tambahan"></textarea></div>
+ </div><div class="modal-foot"><button type="button" class="btn" id="cancelDebt">Batal</button><button type="submit" class="btn primary" id="saveDebt">Simpan utang</button></div></form>
+</div></div>
 
-    function toast(message){$("toast").textContent=message;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
-    function roomRef(){return doc(db,"rooms",roomId)}
-    function debtRef(id){return doc(db,"rooms",roomId,"debts",id)}
-    function remaining(d){return Math.max(0,Number(d.amount||0)-Number(d.totalPaid||0))}
-    function status(d){if(remaining(d)<=0)return "paid";return d.dueDate<today()?"overdue":"open"}
-    function statusLabel(s){return s==="paid"?"Lunas":s==="overdue"?"Terlambat":"Belum lunas"}
+<div class="overlay" id="paymentModal"><div class="modal">
+ <h3>Catat pembayaran</h3><p class="intro" id="paymentIntro"></p>
+ <div class="field"><label for="paymentAmount">Nominal pembayaran (Rp)</label><input id="paymentAmount" type="number" min="1" step="1"></div>
+ <div class="field"><label for="paymentDate">Tanggal pembayaran</label><input id="paymentDate" type="date"></div>
+ <div class="field"><label for="paymentNote">Catatan (opsional)</label><input id="paymentNote" maxlength="200" placeholder="Contoh: Cicilan pertama"></div>
+ <div class="modal-foot"><button class="btn" id="cancelPayment">Batal</button><button class="btn primary" id="confirmPayment">Simpan pembayaran</button></div>
+</div></div>
 
-    function render(){
-      const total=debts.reduce((a,d)=>a+Number(d.amount||0),0), paid=debts.reduce((a,d)=>a+Number(d.totalPaid||0),0), left=debts.reduce((a,d)=>a+remaining(d),0);
-      $("totalDebt").textContent=rupiah(total);$("totalPaid").textContent=rupiah(paid);$("remainingDebt").textContent=rupiah(left);$("unpaidCount").textContent=debts.filter(d=>remaining(d)>0).length;
-      const q=$("searchInput").value.trim().toLowerCase();
-      const rows=debts.filter(d=>(filter==="all"||status(d)===filter)&&(`${d.creditor} ${d.notes||""}`).toLowerCase().includes(q)).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
-      if(!rows.length){$("debtList").innerHTML='<div class="empty"><strong>Belum ada catatan yang cocok</strong>Tambahkan utang baru melalui formulir di sebelah kiri.</div>';return}
-      $("debtList").innerHTML=rows.map(d=>{
-        const s=status(d), pct=d.amount?Math.min(100,(d.totalPaid||0)/d.amount*100):0;
-        return `<article class="debt">
-          <div class="debt-top"><div><div class="creditor">${escapeHtml(d.creditor)}</div><div class="amount">${rupiah(remaining(d))}</div></div><span class="pill pill-${s}">${statusLabel(s)}</span></div>
-          <div class="meta"><span>Utang awal: <b>${rupiah(d.amount)}</b></span><span>Dibayar: <b>${rupiah(d.totalPaid||0)}</b></span></div>
-          <div class="meta"><span>Jatuh tempo: <b>${dateText(d.dueDate)}</b></span><span>Tanggal utang: <b>${dateText(d.debtDate)}</b></span></div>
-          ${d.notes?`<div class="meta"><span>Catatan: ${escapeHtml(d.notes)}</span></div>`:""}
-          <div class="progress"><span style="width:${pct}%"></span></div>
-          <div class="debt-actions">
-            ${s!=="paid"?`<button class="btn btn-primary btn-small" data-action="pay" data-id="${d.id}">＋ Bayar / Cicil</button>`:""}
-            <button class="btn btn-light btn-small" data-action="history" data-id="${d.id}">Riwayat (${(d.payments||[]).length})</button>
-            <button class="btn btn-light btn-small" data-action="edit" data-id="${d.id}">Edit</button>
-            <button class="btn btn-danger btn-small" data-action="delete" data-id="${d.id}">Hapus</button>
-          </div>
-        </article>`;
-      }).join("");
-    }
+<div class="overlay" id="historyModal"><div class="modal">
+ <h3 id="historyTitle">Riwayat pembayaran</h3><p class="intro">Daftar pembayaran yang pernah dicatat untuk utang ini.</p>
+ <div id="historyContent"></div><div class="modal-foot"><button class="btn" id="closeHistory">Tutup</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
 
-    function resetForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("formTitle").textContent="＋ Tambah Utang";$("saveBtn").textContent="Simpan utang";$("cancelEditBtn").classList.add("hidden")}
-    function startEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("notes").value=d.notes||"";$("formTitle").textContent="✎ Edit Utang";$("saveBtn").textContent="Simpan perubahan";$("cancelEditBtn").classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,doc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-    $("debtForm").addEventListener("submit",async e=>{
-      e.preventDefault();
-      const data={creditor:$("creditor").value.trim(),amount:Number($("amount").value),debtDate:$("debtDate").value,dueDate:$("dueDate").value,notes:$("notes").value.trim()};
-      if(!data.creditor||data.amount<=0||!data.debtDate||!data.dueDate)return;
-      if(data.dueDate<data.debtDate){toast("Tanggal jatuh tempo tidak boleh sebelum tanggal utang.");return}
-      try{
-        if(editingId){await updateDoc(debtRef(editingId),data);toast("Catatan utang diperbarui.")}
-        else{await addDoc(collection(db,"rooms",roomId,"debts"),{...data,totalPaid:0,payments:[],createdAt:serverTimestamp()});toast("Utang berhasil ditambahkan.")}
-        resetForm();
-      }catch(err){console.error(err);toast("Gagal menyimpan. Periksa koneksi dan aturan Firebase.")}
-    });
-    $("cancelEditBtn").addEventListener("click",resetForm);
-    document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{filter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));render()}));
-    $("searchInput").addEventListener("input",render);
+const firebaseConfig={
+ apiKey:"AIzaSyA1URvsv35svGvVuNKURICpjmb9wZfA9v4",
+ authDomain:"tracker-f4af2.firebaseapp.com",
+ projectId:"tracker-f4af2",
+ storageBucket:"tracker-f4af2.firebasestorage.app",
+ messagingSenderId:"784405308091",
+ appId:"1:784405308091:web:ba8f9d9e395264bbe3ff9e"
+};
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n)||0);
+const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
+const dateText=s=>s?new Date(s+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"}):"-";
+const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let db,roomId,debts=[],activities=[],unsubDebts=null,unsubActivities=null,activeFilter="all",editingId=null,payingId=null,calendarDate=new Date();
 
-    function openPayment(id){const d=debts.find(x=>x.id===id);if(!d)return;payingId=id;$("modalTitle").textContent="Catat pembayaran";$("modalDescription").textContent=`Sisa utang ${d.creditor}: ${rupiah(remaining(d))}. Pembayaran bisa dilakukan sebagian atau sekaligus.`;$("paymentAmount").value=remaining(d);$("paymentAmount").max=remaining(d);$("paymentDate").value=today();$("paymentNote").value="";$("modalOverlay").classList.add("show")}
-    function closeModal(){$("modalOverlay").classList.remove("show");payingId=null}
-    $("closeModalBtn").addEventListener("click",closeModal);
-    $("modalOverlay").addEventListener("click",e=>{if(e.target===$("modalOverlay"))closeModal()});
-    $("confirmPaymentBtn").addEventListener("click",async()=>{
-      const amount=Number($("paymentAmount").value), date=$("paymentDate").value, note=$("paymentNote").value.trim();
-      if(!payingId||amount<=0||!date){toast("Isi nominal dan tanggal pembayaran dengan benar.");return}
-      try{
-        await runTransaction(db,async tx=>{
-          const ref=debtRef(payingId), snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");
-          const d=snap.data(), left=Math.max(0,Number(d.amount)-Number(d.totalPaid||0));
-          if(amount>left)throw new Error("Pembayaran melebihi sisa utang");
-          const payments=[...(d.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];
-          tx.update(ref,{totalPaid:Number(d.totalPaid||0)+amount,payments});
-        });
-        closeModal();toast("Pembayaran berhasil dicatat.");
-      }catch(err){console.error(err);toast(err.message==="Pembayaran melebihi sisa utang"?err.message:"Gagal mencatat pembayaran.")}
-    });
+function toast(s){$("toast").textContent=s;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2500)}
+function roomPath(){return ["rooms",roomId]}
+function debtRef(id){return doc(db,...roomPath(),"debts",id)}
+function remaining(d){return Math.max(0,Number(d.amount||0)-Number(d.totalPaid||0))}
+function status(d){if(remaining(d)<=0)return "paid";return d.dueDate<today()?"overdue":"open"}
+function statusName(s){return s==="paid"?"Lunas":s==="overdue"?"Terlambat":"Belum lunas"}
+function statusBadge(s){return '<span class="badge '+s+'">'+statusName(s)+'</span>'}
+function showModal(id){$(id).classList.add("show")}
+function hideModal(id){$(id).classList.remove("show")}
+function goTab(tab){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+tab));if(tab==="calendar")renderCalendar()}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>goTab(b.dataset.tab)));
+document.querySelectorAll("[data-goto]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();goTab(a.dataset.goto)}));
 
-    $("debtList").addEventListener("click",async e=>{
-      const b=e.target.closest("button[data-action]");if(!b)return;
-      const d=debts.find(x=>x.id===b.dataset.id);if(!d)return;
-      if(b.dataset.action==="pay")openPayment(d.id);
-      if(b.dataset.action==="edit")startEdit(d);
-      if(b.dataset.action==="delete"&&confirm(`Hapus catatan utang ${d.creditor}? Riwayat pembayarannya juga akan dihapus.`)){try{await deleteDoc(debtRef(d.id));toast("Catatan dihapus.")}catch(err){toast("Gagal menghapus catatan.")}}
-      if(b.dataset.action==="history"){
-        const p=d.payments||[];
-        if(!p.length){alert("Belum ada pembayaran untuk "+d.creditor+".");return}
-        alert("RIWAYAT PEMBAYARAN — "+d.creditor+"\n\n"+p.map((x,i)=>`${i+1}. ${dateText(x.date)} — ${rupiah(x.amount)}${x.note?" ("+x.note+")":""}`).join("\n"));
-      }
-    });
-
-    $("shareBtn").addEventListener("click",async()=>{
-      const url=location.href;
-      try{await navigator.clipboard.writeText(url);toast("Link ruang berhasil disalin. Bagikan ke pasanganmu.")}
-      catch{prompt("Salin link ruang ini:",url)}
-    });
-    $("exportBtn").addEventListener("click",async()=>{
-      if(!debts.length){toast("Belum ada data untuk diekspor.");return}
-      const XLSX=await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
-      const data=debts.map(d=>({"Kreditur":d.creditor,"Tanggal Utang":d.debtDate,"Jatuh Tempo":d.dueDate,"Nominal Awal":Number(d.amount),"Total Dibayar":Number(d.totalPaid||0),"Sisa Utang":remaining(d),"Status":statusLabel(status(d)),"Catatan":d.notes||"","Jumlah Transaksi Pembayaran":(d.payments||[]).length,"Riwayat Pembayaran":(d.payments||[]).map(p=>`${p.date}: ${p.amount}${p.note?" ("+p.note+")":""}`).join(" | ")}));
-      const ws=XLSX.utils.json_to_sheet(data);ws["!cols"]=[{wch:22},{wch:15},{wch:15},{wch:18},{wch:18},{wch:18},{wch:15},{wch:30},{wch:24},{wch:60}];
-      const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Daftar Utang");XLSX.writeFile(wb,"Debt-Tracker-"+today()+".xlsx");
-    });
-
-    function listenRoom(){
-      if(unsubscribe)unsubscribe();
-      unsubscribe=onSnapshot(collection(db,"rooms",roomId,"debts"),snap=>{debts=snap.docs.map(x=>({id:x.id,...x.data()}));render()},err=>{console.error(err);toast("Tidak dapat membaca data. Periksa Firestore Rules.")});
-      $("setup").classList.add("hidden");$("app").classList.remove("hidden");resetForm();
-    }
-
-    async function boot(){
-      try{
-        if(firebaseConfig.apiKey==="ISI_API_KEY"||firebaseConfig.projectId==="ISI_PROJECT_ID"){throw new Error("Firebase belum dikonfigurasi. Isi firebaseConfig di index.html terlebih dahulu.")}
-        const app=initializeApp(firebaseConfig);db=getFirestore(app);const auth=getAuth(app);await signInAnonymously(auth);
-        roomId=decodeURIComponent(location.hash.replace(/^#/,""));
-        if(roomId){listenRoom()}else{$("setup").classList.remove("hidden")}
-      }catch(err){console.error(err);$("setup").classList.remove("hidden");$("createRoomBtn").disabled=true;$("createRoomBtn").textContent="Konfigurasi Firebase belum diisi";$("setup").querySelector("p").textContent=err.message}
-    }
-    $("createRoomBtn").addEventListener("click",async()=>{
-      try{
-        roomId=crypto.randomUUID().replaceAll("-","");
-        await setDoc(roomRef(),{createdAt:serverTimestamp(),schemaVersion:1});
-        location.hash=roomId;listenRoom();toast("Ruang bersama berhasil dibuat.");
-      }catch(err){console.error(err);toast("Gagal membuat ruang. Periksa konfigurasi dan Firestore Rules.")}
-    });
-    boot();
-  </script>
-</body>
-</html>
+async function logActivity(type,creditor,detail){
+ try{await addDoc(collection(db,...roomPath(),"activities"),{type,creditor:String(creditor||""),detail:String(detail||""),createdAt:serverTimestamp(),createdAtClient:new Date().toISOString()})}
+ catch(e){console.warn("Activity log could not be written. Check Firestore Rules for activities subcollection.",e)}
+}
+function renderDashboard(){
+ const total=debts.reduce((a,d)=>a+Number(d.amount||0),0),paid=debts.reduce((a,d)=>a+Number(d.totalPaid||0),0),left=debts.reduce((a,d)=>a+remaining(d),0),open=debts.filter(d=>remaining(d)>0).length;
+ $("totalDebt").textContent=money(total);$("totalPaid").textContent=money(paid);$("remainingDebt").textContent=money(left);$("unpaidCount").textContent=open;
+ const upcoming=debts.filter(d=>remaining(d)>0).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,6);
+ $("upcomingList").innerHTML=upcoming.length?upcoming.map(d=>'<div class="due-row"><div><div class="due-name">'+escapeHtml(d.creditor)+'</div><div class="due-date">'+dateText(d.dueDate)+' · '+statusBadge(status(d))+'</div></div><div class="due-amount">'+money(remaining(d))+'</div></div>').join(""):'<div class="empty">Tidak ada utang aktif.</div>';
+ const pct=total?Math.round(paid/total*100):0;
+ $("paymentSummary").innerHTML='<div style="display:flex;justify-content:space-between;font-size:11px;margin:3px 0 9px"><span class="subtext">Progres pelunasan keseluruhan</span><strong>'+pct+'%</strong></div><div class="progress" style="height:8px"><span style="width:'+pct+'%;background:#526b83"></span></div><div style="display:flex;justify-content:space-between;margin-top:14px;font-size:11px"><span style="color:var(--muted)">Sudah dibayar</span><strong>'+money(paid)+'</strong></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px"><span style="color:var(--muted)">Masih harus dibayar</span><strong>'+money(left)+'</strong></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px"><span style="color:var(--muted)">Catatan lunas</span><strong>'+debts.filter(d=>status(d)==="paid").length+'</strong></div>';
+}
+function renderTable(){
+ const q=$("searchInput").value.trim().toLowerCase();
+ const rows=debts.filter(d=>(activeFilter==="all"||status(d)===activeFilter)&&(String(d.creditor||"")+" "+String(d.notes||"")).toLowerCase().includes(q)).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+ $("debtTableBody").innerHTML=rows.length?rows.map(d=>{
+ const pct=d.amount?Math.min(100,Number(d.totalPaid||0)/Number(d.amount)*100):0;
+ return '<tr><td><div class="person">'+escapeHtml(d.creditor)+'</div><div class="subtext">'+escapeHtml(d.notes||"Tanpa catatan")+'</div></td><td class="money">'+money(d.amount)+'</td><td><div class="money">'+money(d.totalPaid||0)+'</div><div class="progress"><span style="width:'+pct+'%"></span></div></td><td class="money">'+money(remaining(d))+'</td><td>'+dateText(d.dueDate)+'</td><td>'+statusBadge(status(d))+'</td><td><div class="row-actions">'+(status(d)!=="paid"?'<button class="btn small primary" data-act="pay" data-id="'+d.id+'">Bayar</button>':'')+'<button class="btn small" data-act="history" data-id="'+d.id+'">Detail</button><button class="btn small" data-act="edit" data-id="'+d.id+'">Edit</button><button class="btn small danger" data-act="delete" data-id="'+d.id+'">Hapus</button></div></td></tr>'
+ }).join(""):'<tr><td colspan="7" class="empty">Tidak ada catatan yang cocok.</td></tr>';
+}
+function renderCalendar(){
+ const year=calendarDate.getFullYear(),month=calendarDate.getMonth(),first=new Date(year,month,1),offset=(first.getDay()+6)%7,days=new Date(year,month+1,0).getDate(),prevDays=new Date(year,month,0).getDate();
+ $("monthLabel").textContent=calendarDate.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+ const heads=["Sen","Sel","Rab","Kam","Jum","Sab","Min"];let html=heads.map(x=>'<div class="cal-cell head">'+x+'</div>').join("");
+ for(let i=0;i<42;i++){
+  let day,cellMonth=month,cellYear=year,muted=false;
+  if(i<offset){day=prevDays-offset+i+1;cellMonth=month-1;muted=true;if(cellMonth<0){cellMonth=11;cellYear--}}
+  else if(i>=offset+days){day=i-offset-days+1;cellMonth=month+1;muted=true;if(cellMonth>11){cellMonth=0;cellYear++}}
+  else day=i-offset+1;
+  const key=cellYear+"-"+String(cellMonth+1).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+  const due=debts.filter(d=>d.dueDate===key);
+  html+='<div class="cal-cell '+(muted?"muted":"")+'"><div class="cal-num">'+day+'</div><div class="cal-items">'+due.slice(0,3).map(d=>'<div class="cal-item '+status(d)+'" title="'+escapeHtml(d.creditor)+' · '+money(remaining(d))+'">'+escapeHtml(d.creditor)+' · '+money(remaining(d))+'</div>').join("")+(due.length>3?'<div class="subtext">+'+(due.length-3)+' lainnya</div>':"")+'</div></div>';
+ }
+ $("calendarGrid").innerHTML=html;
+}
+function renderActivity(){
+ if(!activities.length){$("activityList").innerHTML='<div class="empty">Belum ada aktivitas yang tercatat.</div>';return}
+ const icon={created:"+",updated:"✎",payment:"Rp",deleted:"×"};
+ $("activityList").innerHTML=activities.slice(0,100).map(a=>{
+ const when=a.createdAt?.toDate?a.createdAt.toDate():a.createdAtClient?new Date(a.createdAtClient):null;
+ const time=when?when.toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"}):"Baru saja";
+ return '<div class="activity"><div class="activity-icon">'+(icon[a.type]||"•")+'</div><div class="activity-text"><strong>'+escapeHtml(a.creditor||"Catatan utang")+'</strong><br>'+escapeHtml(a.detail||"Aktivitas diperbarui")+'</div><div class="activity-time">'+time+'</div></div>';
+ }).join("");
+}
+function render(){renderDashboard();renderTable();renderActivity();if($("view-calendar").classList.contains("active"))renderCalendar()}
+function resetDebtForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("debtModalTitle").textContent="Tambah utang";$("saveDebt").textContent="Simpan utang"}
+function openAdd(){resetDebtForm();showModal("debtModal")}
+function openEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("notes").value=d.notes||"";$("debtModalTitle").textContent="Edit utang";$("saveDebt").textContent="Simpan perubahan";showModal("debtModal")}
+$("quickAdd").addEventListener("click",openAdd);$("addDebtBtn").addEventListener("click",openAdd);$("cancelDebt").addEventListener("click",()=>hideModal("debtModal"));
+$("debtForm").addEventListener("submit",async e=>{
+ e.preventDefault();const data={creditor:$("creditor").value.trim(),amount:Number($("amount").value),debtDate:$("debtDate").value,dueDate:$("dueDate").value,notes:$("notes").value.trim()};
+ if(!data.creditor||data.amount<=0||!data.debtDate||!data.dueDate)return;
+ if(data.dueDate<data.debtDate){toast("Jatuh tempo tidak boleh sebelum tanggal utang.");return}
+ try{
+  if(editingId){const old=debts.find(d=>d.id===editingId);await updateDoc(debtRef(editingId),data);await logActivity("updated",data.creditor,"Informasi utang diperbarui.");}
+  else{await addDoc(collection(db,...roomPath(),"debts"),{...data,totalPaid:0,payments:[],createdAt:serverTimestamp()});await logActivity("created",data.creditor,"Catatan utang baru ditambahkan sebesar "+money(data.amount)+".");}
+  hideModal("debtModal");resetDebtForm();toast(editingId?"Perubahan disimpan.":"Utang ditambahkan.");
+ }catch(err){console.error(err);toast("Gagal menyimpan catatan.")}
+});
+function openPayment(id){const d=debts.find(x=>x.id===id);if(!d)return;payingId=id;$("paymentIntro").textContent="Sisa utang "+d.creditor+": "+money(remaining(d))+". Masukkan pembayaran sebagian atau pelunasan."; $("paymentAmount").value=remaining(d);$("paymentAmount").max=remaining(d);$("paymentDate").value=today();$("paymentNote").value="";showModal("paymentModal")}
+$("cancelPayment").addEventListener("click",()=>hideModal("paymentModal"));
+$("confirmPayment").addEventListener("click",async()=>{
+ const amount=Number($("paymentAmount").value),date=$("paymentDate").value,note=$("paymentNote").value.trim();if(!payingId||amount<=0||!date){toast("Isi nominal dan tanggal pembayaran.");return}
+ const d=debts.find(x=>x.id===payingId);
+ try{
+  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments})});
+  await logActivity("payment",d?.creditor||"Kreditur","Pembayaran "+money(amount)+" dicatat"+(note?" ("+note+")":"")+".");hideModal("paymentModal");toast("Pembayaran berhasil dicatat.");
+ }catch(err){console.error(err);toast(err.message==="Pembayaran melebihi sisa utang"?err.message:"Gagal mencatat pembayaran.")}
+});
+function showHistory(d){
+ $("historyTitle").textContent="Riwayat · "+d.creditor;const p=d.payments||[];
+ $("historyContent").innerHTML=p.length?p.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map((x,i)=>'<div class="history-line"><div><strong>'+dateText(x.date)+'</strong><span style="color:var(--muted)">'+escapeHtml(x.note||"Pembayaran")+'</span></div><strong>'+money(x.amount)+'</strong></div>').join(""):'<div class="empty">Belum ada pembayaran.</div>';
+ showModal("historyModal");
+}
+$("closeHistory").addEventListener("click",()=>hideModal("historyModal"));
+$("debtTableBody").addEventListener("click",async e=>{
+ const b=e.target.closest("button[data-act]");if(!b)return;const d=debts.find(x=>x.id===b.dataset.id);if(!d)return;
+ if(b.dataset.act==="pay")openPayment(d.id);
+ if(b.dataset.act==="history")showHistory(d);
+ if(b.dataset.act==="edit")openEdit(d);
+ if(b.dataset.act==="delete"&&confirm("Hapus catatan utang "+d.creditor+" beserta riwayat pembayarannya?")){try{await logActivity("deleted",d.creditor,"Catatan utang dihapus.");await deleteDoc(debtRef(d.id));toast("Catatan dihapus.")}catch(err){toast("Gagal menghapus catatan.")}}
+});
+document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{activeFilter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderTable()}));
+$("searchInput").addEventListener("input",renderTable);
+$("prevMonth").addEventListener("click",()=>{calendarDate.setMonth(calendarDate.getMonth()-1);renderCalendar()});
+$("nextMonth").addEventListener("click",()=>{calendarDate.setMonth(calendarDate.getMonth()+1);renderCalendar()});
+$("shareBtn").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(location.href);toast("Link ruang disalin.")}catch(e){prompt("Salin link ruang:",location.href)}});
+$("exportBtn").addEventListener("click",async()=>{
+ if(!debts.length){toast("Belum ada data untuk diekspor.");return}
+ try{const XLSX=await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
+ const rows=debts.map(d=>({"Kreditur":d.creditor,"Tanggal Utang":d.debtDate,"Jatuh Tempo":d.dueDate,"Nominal Awal":Number(d.amount),"Total Dibayar":Number(d.totalPaid||0),"Sisa Utang":remaining(d),"Status":statusName(status(d)),"Catatan":d.notes||"","Jumlah Pembayaran":(d.payments||[]).length,"Riwayat Pembayaran":(d.payments||[]).map(p=>p.date+": "+p.amount+(p.note?" ("+p.note+")":"")).join(" | ")}));
+ const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Daftar Utang");XLSX.writeFile(wb,"Debt-Tracker-"+today()+".xlsx");}
+ catch(e){console.error(e);toast("Export gagal. Coba lagi.")}
+});
+$("calendarGrid").addEventListener("click",e=>{const item=e.target.closest(".cal-item");if(item){}});
+function listen(){
+ if(unsubDebts)unsubDebts();if(unsubActivities)unsubActivities();
+ unsubDebts=onSnapshot(collection(db,...roomPath(),"debts"),snap=>{debts=snap.docs.map(x=>({id:x.id,...x.data()}));render()},err=>{console.error(err);toast("Tidak dapat membaca data utang. Periksa Firestore Rules.")});
+ unsubActivities=onSnapshot(collection(db,...roomPath(),"activities"),snap=>{activities=snap.docs.map(x=>({id:x.id,...x.data()}));activities.sort((a,b)=>{const aa=a.createdAt?.toMillis?a.createdAt.toMillis():new Date(a.createdAtClient||0).getTime();const bb=b.createdAt?.toMillis?b.createdAt.toMillis():new Date(b.createdAtClient||0).getTime();return bb-aa});renderActivity()},err=>{console.warn("Activity listener unavailable. Check Firestore Rules.",err);$("activityList").innerHTML='<div class="empty">Aktivitas belum dapat dimuat. Perbarui Firestore Rules untuk mengaktifkan menu ini.</div>'});
+ render();goTab("dashboard");
+}
+async function boot(){
+ try{const app=initializeApp(firebaseConfig);db=getFirestore(app);await signInAnonymously(getAuth(app));roomId=decodeURIComponent(location.hash.replace(/^#/,""));if(!roomId){toast("Link ruang tidak ditemukan.");return}listen()}
+ catch(err){console.error(err);document.body.innerHTML='<main class="shell"><section class="panel"><h2>Debt Tracker tidak dapat terhubung</h2><p>Periksa koneksi internet, Firebase Authentication, dan Firestore Rules.</p><p style="color:#b94747;font-size:12px">'+escapeHtml(err.message)+'</p></section></main>'}
+}
+document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("show")}));
+boot();
+</script>
+</body></html>
