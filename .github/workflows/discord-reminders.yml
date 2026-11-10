@@ -5,6 +5,12 @@ on:
     # 08:00 WIB (01:00 UTC) every day
     - cron: "0 1 * * *"
   workflow_dispatch:
+    inputs:
+      test_discord:
+        description: "Send a test message to the Discord channel (does not read or change debts)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -28,4 +34,5 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TEST_DISCORD: ${{ inputs.test_discord }}
         run: node scripts/discord-reminders.mjs
