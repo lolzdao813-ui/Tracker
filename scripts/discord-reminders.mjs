@@ -2,11 +2,42 @@ import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const roomId = "22849ef54df441cab4da10069d2c7788";
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "{}");
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+if (!webhookUrl) {
+  throw new Error("Missing DISCORD_WEBHOOK_URL secret.");
+}
 
-if (!serviceAccount.project_id || !webhookUrl) {
-  throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON or DISCORD_WEBHOOK_URL secret.");
+if (process.env.TEST_DISCORD === "true") {
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: "Tracker Reminder",
+      embeds: [{
+        title: "✅ Tes koneksi Discord berhasil!",
+        description: "Tracker berhasil mengirim pesan ke channel ini. Pengingat otomatis H-3 dan hari jatuh tempo sudah siap digunakan.",
+        color: 5763719,
+        fields: [
+          { name: "Mode", value: "Pesan percobaan", inline: true },
+          { name: "Zona waktu", value: "Asia/Jakarta (WIB)", inline: true }
+        ],
+        footer: { text: "Tracker Reminder Bot" },
+        timestamp: new Date().toISOString()
+      }],
+      allowed_mentions: { parse: [] }
+    })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Discord test webhook failed (${response.status}): ${body.slice(0, 500)}`);
+  }
+  console.log("Discord test message sent successfully. Firestore was not accessed or changed.");
+  process.exit(0);
+}
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "{}");
+if (!serviceAccount.project_id) {
+  throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON secret.");
 }
 
 initializeApp({ credential: cert(serviceAccount) });
