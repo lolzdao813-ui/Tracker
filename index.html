@@ -266,7 +266,7 @@ body:after{content:"";position:fixed;z-index:-1;pointer-events:none;width:560px;
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,writeBatch,serverTimestamp,getDocs,query,where} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,collection,addDoc,onSnapshot,updateDoc,deleteDoc,runTransaction,writeBatch,serverTimestamp,getDocs,query,where} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyA1URvsv35svGvVuNKURICpjmb9wZfA9v4",
@@ -296,6 +296,17 @@ function showCelebration(kind,title,message){
 function toast(s){$("toast").textContent=s;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2500)}
 function roomPath(){return ["rooms",roomId]}
 function debtRef(id){return doc(db,...roomPath(),"debts",id)}
+async function cleanupOrphanedDebtTransactions(){
+ const txSnap=await getDocs(collection(db,...roomPath(),"transactions"));
+ const linked=txSnap.docs.filter(x=>x.data().sourceDebtId);
+ if(!linked.length)return 0;
+ const checked=await Promise.all(linked.map(async x=>({ref:x.ref,exists:(await getDoc(debtRef(x.data().sourceDebtId))).exists()})));
+ const orphaned=checked.filter(x=>!x.exists).map(x=>x.ref);
+ for(let i=0;i<orphaned.length;i+=450){
+  const batch=writeBatch(db);orphaned.slice(i,i+450).forEach(ref=>batch.delete(ref));await batch.commit();
+ }
+ return orphaned.length;
+}
 function remaining(d){return Math.max(0,Number(d.amount||0)-Number(d.totalPaid||0))}
 function status(d){if(remaining(d)<=0)return "paid";return d.dueDate<today()?"overdue":"open"}
 function statusName(s){return s==="paid"?"Lunas":s==="overdue"?"Terlambat":"Belum lunas"}
@@ -484,7 +495,7 @@ function listen(){
  render();goTab("dashboard");
 }
 async function boot(){
- try{const app=initializeApp(firebaseConfig);db=getFirestore(app);await signInAnonymously(getAuth(app));roomId=decodeURIComponent(location.hash.replace(/^#/,""));if(!roomId){toast("Link ruang tidak ditemukan.");return}listen()}
+ try{const app=initializeApp(firebaseConfig);db=getFirestore(app);await signInAnonymously(getAuth(app));roomId=decodeURIComponent(location.hash.replace(/^#/,""));if(!roomId){toast("Link ruang tidak ditemukan.");return}const cleaned=await cleanupOrphanedDebtTransactions();if(cleaned)console.info("Removed "+cleaned+" orphaned debt repayment transactions.");listen()}
  catch(err){console.error(err);document.body.innerHTML='<main class="shell"><section class="panel"><h2>Tracker tidak dapat terhubung</h2><p>Periksa koneksi internet, Firebase Authentication, dan Firestore Rules.</p><p style="color:#b94747;font-size:12px">'+escapeHtml(err.message)+'</p></section></main>'}
 }
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("show")}));
