@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f8fa">
-<title>Debt Tracker</title>
+<title>Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -22,7 +22,7 @@
 <body>
 <main class="shell">
 <header class="topbar">
- <div class="brand"><div class="mark">DT</div><div><h1>Debt Tracker</h1><p>Ruang pencatatan utang bersama</p></div></div>
+ <div class="brand"><div class="mark">T</div><div><h1>Tracker</h1><p>Ruang pencatatan utang bersama</p></div></div>
  <div class="top-actions"><button class="btn" id="shareBtn">Bagikan ruang</button><button class="btn" id="exportBtn">Export Excel ↓</button></div>
 </header>
 <nav class="tabs">
@@ -241,7 +241,7 @@ $("exportBtn").addEventListener("click",async()=>{
  if(!debts.length){toast("Belum ada data untuk diekspor.");return}
  try{const XLSX=await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
  const rows=debts.map(d=>({"Kreditur":d.creditor,"Tanggal Utang":d.debtDate,"Jatuh Tempo":d.dueDate,"Nominal Awal":Number(d.amount),"Total Dibayar":Number(d.totalPaid||0),"Sisa Utang":remaining(d),"Status":statusName(status(d)),"Catatan":d.notes||"","Jumlah Pembayaran":(d.payments||[]).length,"Riwayat Pembayaran":(d.payments||[]).map(p=>p.date+": "+p.amount+(p.note?" ("+p.note+")":"")).join(" | ")}));
- const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Daftar Utang");XLSX.writeFile(wb,"Debt-Tracker-"+today()+".xlsx");}
+ const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Daftar Utang");XLSX.writeFile(wb,"Tracker-"+today()+".xlsx");}
  catch(e){console.error(e);toast("Export gagal. Coba lagi.")}
 });
 $("calendarGrid").addEventListener("click",e=>{const cell=e.target.closest(".cal-cell[data-date]");if(!cell)return;selectedCalendarDay=cell.dataset.date;const d=new Date(selectedCalendarDay+"T00:00:00");calendarDate=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar()});
@@ -253,7 +253,7 @@ function listen(){
 }
 async function boot(){
  try{const app=initializeApp(firebaseConfig);db=getFirestore(app);await signInAnonymously(getAuth(app));roomId=decodeURIComponent(location.hash.replace(/^#/,""));if(!roomId){toast("Link ruang tidak ditemukan.");return}listen()}
- catch(err){console.error(err);document.body.innerHTML='<main class="shell"><section class="panel"><h2>Debt Tracker tidak dapat terhubung</h2><p>Periksa koneksi internet, Firebase Authentication, dan Firestore Rules.</p><p style="color:#b94747;font-size:12px">'+escapeHtml(err.message)+'</p></section></main>'}
+ catch(err){console.error(err);document.body.innerHTML='<main class="shell"><section class="panel"><h2>Tracker tidak dapat terhubung</h2><p>Periksa koneksi internet, Firebase Authentication, dan Firestore Rules.</p><p style="color:#b94747;font-size:12px">'+escapeHtml(err.message)+'</p></section></main>'}
 }
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("show")}));
 boot();
