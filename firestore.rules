@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // A room ID is a shared access link. Anyone who has the link can
+    // authenticate anonymously and read/write the room's collections.
+    match /rooms/{roomId} {
+      allow read, write: if signedIn();
+
+      // debts, activities, transactions, budgets, and goals
+      match /{collectionName}/{documentId} {
+        allow read, write: if signedIn();
+      }
+    }
+  }
+}
