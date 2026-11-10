@@ -1,0 +1,31 @@
+name: Tracker Discord Due-Date Reminders
+
+on:
+  schedule:
+    # 08:00 WIB (01:00 UTC) every day
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Firebase Admin SDK
+        run: npm install --no-save firebase-admin
+
+      - name: Send Discord reminders
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: node scripts/discord-reminders.mjs
