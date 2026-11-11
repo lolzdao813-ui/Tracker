@@ -440,8 +440,8 @@ function renderDashboard(){
  const total=debts.reduce((a,d)=>a+Number(d.amount||0),0),paid=debts.reduce((a,d)=>a+Number(d.totalPaid||0),0),left=debts.reduce((a,d)=>a+remaining(d),0),open=debts.filter(d=>remaining(d)>0).length;
  const paidCount=debts.filter(d=>status(d)==="paid").length,late=debts.filter(d=>status(d)==="overdue").length,openCount=debts.filter(d=>status(d)==="open").length;
  $("totalDebt").textContent=money(total);$("totalPaid").textContent=money(paid);$("remainingDebt").textContent=money(left);$("unpaidCount").textContent=open;
- const upcoming=debts.filter(d=>remaining(d)>0).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,6);
- $("upcomingList").innerHTML=upcoming.length?upcoming.map(d=>'<div class="due-row"><div><div class="due-name">'+escapeHtml(d.creditor)+'</div><div class="due-date">'+dateText(d.dueDate)+' · '+statusBadge(status(d))+'</div></div><div class="due-amount">'+money(remaining(d))+'</div></div>').join(""):'<div class="empty">Tidak ada utang aktif.</div>';
+ const upcoming=debts.flatMap(d=>debtSchedule(d).filter(x=>Number(x.paid||0)<Number(x.amount||0)).map(x=>({...x,creditor:d.creditor,totalRemaining:remaining(d)}))).sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,6);
+ $("upcomingList").innerHTML=upcoming.length?upcoming.map(d=>'<div class="due-row"><div><div class="due-name">'+escapeHtml(d.creditor)+'</div><div class="due-date">'+dateText(d.dueDate)+' · Cicilan '+d.number+' · '+(d.dueDate<today()?'Terlambat':'Belum dibayar')+'</div></div><div class="due-amount">'+money(Number(d.amount||0)-Number(d.paid||0))+'</div></div>').join(""):'<div class="empty">Tidak ada utang aktif.</div>';
  const pct=total?Math.round(paid/total*100):0;
  $("paidPercent").textContent=pct+"%";$("paidCopy").textContent=money(paid)+" sudah dibayar dari total "+money(total)+".";
  $("paidBar").style.width=pct+"%";
@@ -472,14 +472,14 @@ function renderCalendar(){
   else if(i>=offset+days){day=i-offset-days+1;cellMonth=month+1;muted=true;if(cellMonth>11){cellMonth=0;cellYear++}}
   else day=i-offset+1;
   const key=cellYear+"-"+String(cellMonth+1).padStart(2,"0")+"-"+String(day).padStart(2,"0");
-  const due=debts.filter(d=>d.dueDate===key);
+  const due=debts.flatMap(d=>debtSchedule(d).filter(x=>x.dueDate===key).map(x=>({...x,creditor:d.creditor})));
   html+='<div class="cal-cell '+(muted?"muted ":"")+(selectedCalendarDay===key?"selected":"")+'" data-date="'+key+'"><div class="cal-num">'+day+(due.length?'<span class="cal-count">'+due.length+' agenda</span>':"")+'</div><div class="cal-items">'+due.slice(0,3).map(d=>'<div class="cal-item '+status(d)+'" title="'+escapeHtml(d.creditor)+' · '+money(remaining(d))+'">'+escapeHtml(d.creditor)+' · '+money(remaining(d))+'</div>').join("")+(due.length>3?'<div class="subtext">+'+(due.length-3)+' lainnya</div>':"")+'</div></div>';
  }
  $("calendarGrid").innerHTML=html;
- const selected=debts.filter(d=>d.dueDate===selectedCalendarDay).sort((a,b)=>a.creditor.localeCompare(b.creditor));
+ const selected=debts.flatMap(d=>debtSchedule(d).filter(x=>x.dueDate===selectedCalendarDay).map(x=>({...x,creditor:d.creditor,notes:d.notes}))).sort((a,b)=>a.creditor.localeCompare(b.creditor));
  $("selectedDateLabel").textContent=dateText(selectedCalendarDay);
  $("selectedDateCount").textContent=selected.length+" catatan";
- $("selectedDateItems").innerHTML=selected.length?selected.map(d=>'<div class="due-row"><div><div class="due-name">'+escapeHtml(d.creditor)+'</div><div class="due-date">'+statusBadge(status(d))+' · '+escapeHtml(d.notes||"Tanpa catatan")+'</div></div><div class="due-amount">'+money(remaining(d))+'</div></div>').join(""):'<div class="empty">Tidak ada utang yang jatuh tempo pada tanggal ini.</div>';
+ $("selectedDateItems").innerHTML=selected.length?selected.map(d=>'<div class="due-row"><div><div class="due-name">'+escapeHtml(d.creditor)+'</div><div class="due-date">Cicilan '+d.number+' · '+(Number(d.paid||0)>=Number(d.amount||0)?'Lunas':d.dueDate<today()?'Terlambat':'Belum dibayar')+' · '+escapeHtml(d.notes||"Tanpa catatan")+'</div></div><div class="due-amount">'+money(Number(d.amount||0)-Number(d.paid||0))+'</div></div>').join(""):'<div class="empty">Tidak ada utang yang jatuh tempo pada tanggal ini.</div>';
 }
 function renderActivity(){
  if(!activities.length){$("activityList").innerHTML='<div class="empty">Belum ada aktivitas yang tercatat.</div>';return}
