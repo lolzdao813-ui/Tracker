@@ -533,7 +533,7 @@ $("debtForm").addEventListener("submit",async e=>{
  if(data.dueDate<data.debtDate){toast("Jatuh tempo tidak boleh sebelum tanggal utang.");return}
  const wasEditing=!!editingId;
  try{
-  if(wasEditing){await updateDoc(debtRef(editingId),data);await logActivity("updated",data.creditor,"Informasi utang diperbarui.");}
+  if(wasEditing){const previous=debts.find(x=>x.id===editingId);let paidToAllocate=Number(previous?.totalPaid||0);data.installments=data.installments.map(part=>{const paid=Math.min(part.amount,paidToAllocate);paidToAllocate-=paid;return{...part,paid}});await updateDoc(debtRef(editingId),data);await logActivity("updated",data.creditor,"Informasi utang diperbarui.");}
   else{await addDoc(collection(db,...roomPath(),"debts"),{...data,totalPaid:0,payments:[],createdAt:serverTimestamp()});await logActivity("created",data.creditor,"Catatan utang baru ditambahkan sebesar "+money(data.amount)+".");}
   hideModal("debtModal");resetDebtForm();
   if(wasEditing){toast("Perubahan disimpan.");showCelebration("happy","Data diperbarui!","Catatan utang berhasil diperbarui.");}
