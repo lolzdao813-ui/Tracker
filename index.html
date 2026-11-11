@@ -71,7 +71,7 @@ body{font-size:15px}
 .bulk-table input{width:100%;min-width:115px;padding:10px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px}
 .bulk-table .bulk-creditor{min-width:170px}.bulk-table .bulk-notes{min-width:150px}
 .bulk-remove{border:0;background:var(--redbg);color:var(--red);border-radius:8px;width:34px;height:34px;font-size:18px}
-.bulk-footnote{font-size:12px;color:var(--muted);margin-top:10px}
+.bulk-footnote{font-size:12px;color:var(--muted);margin-top:10px}.installment-preview{grid-column:1/-1;padding:12px 14px;border:1px solid #dce5ee;border-radius:9px;background:#f6f9fc;color:#34465d;font-size:12px;line-height:1.6}.installment-preview strong{display:block;margin-bottom:5px}.bulk-preview{min-width:190px;max-width:250px;white-space:normal;font-size:11px;line-height:1.5;color:#40536a}.bulk-preview strong{display:block;color:#24384f}.bulk-preview span{display:block;color:#788697}
 @media(max-width:700px){.page-actions{width:100%;justify-content:flex-start}.bulk-modal{padding:18px}.bulk-modal .modal-foot{position:sticky;bottom:-18px;background:#fff;padding:14px 0 2px}}
 /* Tracker dashboard redesign */
 body{background:#f2f4f9;color:#182238;font-family:"DM Sans",sans-serif}
@@ -343,7 +343,7 @@ body:not(.logged-in) .auth-screen{display:grid}.auth-card{width:min(420px,100%);
   <div class="field"><label for="amount">Nominal utang (Rp) *</label><input id="amount" type="number" min="1" step="1" required></div>
   <div class="field"><label for="debtDate">Tanggal utang *</label><input id="debtDate" type="date" required></div>
   <div class="field"><label for="dueDate">Tanggal jatuh tempo *</label><input id="dueDate" type="date" required></div>
-  <div class="field"><label for="installmentCount">Jumlah pembayaran</label><input id="installmentCount" type="number" min="1" max="120" step="1" value="1" required><small class="subtext">1 = sekali bayar. Lebih dari 1 = cicilan bulanan dengan nominal sama.</small></div>
+  <div class="field"><label for="installmentCount">Jumlah pembayaran</label><input id="installmentCount" type="number" min="1" max="120" step="1" value="1" required><small class="subtext">1 = sekali bayar. Lebih dari 1 = cicilan bulanan.</small></div><div class="installment-preview" id="installmentPreview"><strong>Rincian pembagian cicilan</strong>Isi nominal, tanggal jatuh tempo, dan jumlah cicilan untuk melihat pembagian otomatis.</div>
   <div class="field full"><label for="notes">Catatan (opsional)</label><textarea id="notes" maxlength="500" placeholder="Keterangan tambahan"></textarea></div>
  </div><div class="modal-foot"><button type="button" class="btn" id="cancelDebt">Batal</button><button type="submit" class="btn primary" id="saveDebt">Simpan utang</button></div></form>
 </div></div>
@@ -351,7 +351,7 @@ body:not(.logged-in) .auth-screen{display:grid}.auth-card{width:min(420px,100%);
 <div class="overlay" id="bulkDebtModal"><div class="modal bulk-modal">
  <h3>Input utang massal</h3><p class="intro">Masukkan beberapa catatan sekaligus. Setiap baris akan disimpan sebagai utang terpisah dengan detail lengkap.</p>
  <div class="bulk-toolbar"><span id="bulkRowCount">0 baris</span><button type="button" class="btn" id="addBulkRow">＋ Tambah baris</button></div>
- <div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>Nama kreditur *</th><th>Nominal (Rp) *</th><th>Tanggal utang *</th><th>Jatuh tempo pertama *</th><th>Jumlah cicilan</th><th>Catatan</th><th></th></tr></thead><tbody id="bulkDebtRows"></tbody></table></div>
+ <div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>Nama kreditur *</th><th>Nominal (Rp) *</th><th>Tanggal utang *</th><th>Jatuh tempo pertama *</th><th>Jumlah cicilan</th><th>Estimasi per bulan</th><th>Catatan</th><th></th></tr></thead><tbody id="bulkDebtRows"></tbody></table></div>
  <div class="bulk-footnote">Kolom bertanda * wajib diisi. Maksimal 200 utang dalam satu kali penyimpanan.</div>
  <div class="modal-foot"><button type="button" class="btn" id="cancelBulkDebt">Batal</button><button type="button" class="btn primary" id="saveBulkDebt">Simpan semua utang</button></div>
 </div></div>
@@ -497,12 +497,16 @@ function renderActivity(){
 function render(){renderDashboard();renderTable();renderActivity();renderFinance();renderBudgets();renderGoals();renderReports();if($("view-calendar").classList.contains("active"))renderCalendar()}
 function makeBulkRow(){
  const tr=document.createElement("tr");
- tr.innerHTML='<td><input class="bulk-creditor" maxlength="80" placeholder="Nama kreditur" aria-label="Nama kreditur" required></td><td><input class="bulk-amount" type="number" min="1" step="1" placeholder="Nominal" aria-label="Nominal utang" required></td><td><input class="bulk-date" type="date" aria-label="Tanggal utang" required></td><td><input class="bulk-due" type="date" aria-label="Jatuh tempo pertama" required></td><td><input class="bulk-installments" type="number" min="1" max="120" step="1" value="1" aria-label="Jumlah cicilan" required></td><td><input class="bulk-notes" maxlength="500" placeholder="Catatan (opsional)" aria-label="Catatan"></td><td><button type="button" class="bulk-remove" aria-label="Hapus baris" title="Hapus baris">×</button></td>';
+ tr.innerHTML='<td><input class="bulk-creditor" maxlength="80" placeholder="Nama kreditur" aria-label="Nama kreditur" required></td><td><input class="bulk-amount" type="number" min="1" step="1" placeholder="Nominal" aria-label="Nominal utang" required></td><td><input class="bulk-date" type="date" aria-label="Tanggal utang" required></td><td><input class="bulk-due" type="date" aria-label="Jatuh tempo pertama" required></td><td><input class="bulk-installments" type="number" min="1" max="120" step="1" value="1" aria-label="Jumlah cicilan" required></td><td><div class="bulk-preview">Isi nominal &amp; jumlah cicilan</div></td><td><input class="bulk-notes" maxlength="500" placeholder="Catatan (opsional)" aria-label="Catatan"></td><td><button type="button" class="bulk-remove" aria-label="Hapus baris" title="Hapus baris">×</button></td>';
  tr.querySelector(".bulk-date").value=today();tr.querySelector(".bulk-due").value=today();
  tr.querySelector(".bulk-remove").addEventListener("click",()=>{tr.remove();updateBulkCount()});
  $("bulkDebtRows").appendChild(tr);updateBulkCount();
 }
-function updateBulkCount(){$("bulkRowCount").textContent=$("bulkDebtRows").children.length+" baris"}
+function installmentPreviewText(amount,due,count){if(!Number.isFinite(amount)||amount<=0||!due||!Number.isInteger(count)||count<1||count>120)return "";return makeInstallments(amount,due,count).map(x=>dateText(x.dueDate)+": "+money(x.amount)).join(" • ")}
+ function updateBulkPreview(tr){const amount=Number(tr.querySelector(".bulk-amount").value),due=tr.querySelector(".bulk-due").value,count=Number.parseInt(tr.querySelector(".bulk-installments").value,10),el=tr.querySelector(".bulk-preview");const parts=installmentPreviewText(amount,due,count);el.innerHTML=parts?("<strong>"+(count>1?money(amount/count)+" rata-rata/bulan":money(amount))+"</strong><span>"+parts+"</span>"):"Isi nominal, jatuh tempo, dan jumlah cicilan"}
+ function updateSingleInstallmentPreview(){const amount=Number($("amount").value),due=$("dueDate").value,count=Number.parseInt($("installmentCount").value,10),el=$("installmentPreview");const parts=installmentPreviewText(amount,due,count);el.innerHTML="<strong>Rincian pembagian cicilan</strong>"+(parts?("<div>"+(count>1?"Rata-rata "+money(amount/count)+" per bulan":"Sekali bayar "+money(amount))+"</div><div>"+parts+"</div>"):"Isi nominal, tanggal jatuh tempo, dan jumlah cicilan untuk melihat pembagian otomatis.")}
+ ["amount","dueDate","installmentCount"].forEach(id=>$(id).addEventListener("input",updateSingleInstallmentPreview));
+ function updateBulkCount(){$("bulkRowCount").textContent=$("bulkDebtRows").children.length+" baris"}
 function openBulkDebt(){
  $("bulkDebtRows").innerHTML="";for(let i=0;i<3;i++)makeBulkRow();showModal("bulkDebtModal");
 }
@@ -530,9 +534,9 @@ $("saveBulkDebt").addEventListener("click",async()=>{
  }catch(err){console.error(err);toast("Gagal menyimpan utang massal. Tidak ada data yang disimpan jika proses batch gagal.");}
  finally{btn.disabled=false;btn.textContent="Simpan semua utang"}
 });
-function resetDebtForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("installmentCount").value=1;$("debtModalTitle").textContent="Tambah utang";$("saveDebt").textContent="Simpan utang"}
+function resetDebtForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("installmentCount").value=1;updateSingleInstallmentPreview();$("debtModalTitle").textContent="Tambah utang";$("saveDebt").textContent="Simpan utang"}
 function openAdd(){resetDebtForm();showModal("debtModal")}
-function openEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("installmentCount").value=Array.isArray(d.installments)?d.installments.length:1;$("notes").value=d.notes||"";$("debtModalTitle").textContent="Edit utang";$("saveDebt").textContent="Simpan perubahan";showModal("debtModal")}
+function openEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("installmentCount").value=Array.isArray(d.installments)?d.installments.length:1;$("notes").value=d.notes||"";updateSingleInstallmentPreview();$("debtModalTitle").textContent="Edit utang";$("saveDebt").textContent="Simpan perubahan";showModal("debtModal")}
 $("quickAdd").addEventListener("click",openAdd);$("addDebtBtn").addEventListener("click",openAdd);$("cancelDebt").addEventListener("click",()=>hideModal("debtModal"));
 $("debtForm").addEventListener("submit",async e=>{
  e.preventDefault();const data={creditor:$("creditor").value.trim(),amount:Number($("amount").value),debtDate:$("debtDate").value,dueDate:$("dueDate").value,notes:$("notes").value.trim()};const installmentCount=Math.max(1,Math.min(120,Number.parseInt($("installmentCount").value,10)||1));data.installments=makeInstallments(data.amount,data.dueDate,installmentCount);
