@@ -558,18 +558,17 @@ $("confirmPayment").addEventListener("click",async()=>{
  const d=debts.find(x=>x.id===payingId),isFullPayment=d&&amount>=remaining(d);
  try{
   const expenseRef=doc(collection(db,...roomPath(),"transactions"));
-  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];let installments=Array.isArray(item.installments)?item.installments.map(x=>({...x})):null;let allocation=amount;if(installments){for(const part of installments){const due=Math.max(0,Number(part.amount||0)-Number(part.paid||0));const used=Math.min(due,allocation);part.paid=Number(part.paid||0)+used;allocation-=used;if(allocation<=0)break;}}tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments,...(installments?{installments}:{})});tx.set(expenseRef,{type:"expense",title:"Pembayaran utang: "+(d?.creditor||"Kreditur"),amount,date,category:"Pfunction showHistory(d){
+  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];let installments=Array.isArray(item.installments)?item.installments.map(x=>({...x})):null;let allocation=amount;if(installments){for(const part of installments){const due=Math.max(0,Number(part.amount||0)-Number(part.paid||0));const used=Math.min(due,allocation);part.paid=Number(part.paid||0)+used;allocation-=used;if(allocation<=0)break;}}tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments,...(installments?{installments}:{})});tx.set(expenseRef,{type:"expense",title:"Pembayaran utang: "+(d?.creditor||"Kreditur"),amount,date,category:"Pembayaran Utang",note:note||"Pembayaran utang otomatis",sourceDebtId:payingId,createdAt:serverTimestamp()})});
+  await logActivity("payment",d?.creditor||"Kreditur","Pembayaran "+money(amount)+" dicatat"+(note?" ("+note+")":"")+".");hideModal("paymentModal");toast("Pembayaran berhasil dicatat dan masuk ke pengeluaran.");
+  if(isFullPayment)showCelebration("win","YESSS! LUNAS! 🎉","Satu utang berhasil diselesaikan. Keren!");
+  else showCelebration("happy","Yess! Ada kemajuan!","Sisa utang "+d.creditor+" berhasil berkurang "+money(amount)+".");
+ }catch(err){console.error(err);toast(err.message==="Pembayaran melebihi sisa utang"?err.message:"Gagal mencatat pembayaran.")}
+});
+function showHistory(d){
  $("historyTitle").textContent="Detail · "+d.creditor;const p=d.payments||[],schedule=debtSchedule(d);
  const scheduleHtml='<section class="installment-detail"><h4>Jadwal & pembagian cicilan ('+schedule.length+' kali pembayaran)</h4>'+schedule.map(part=>{const paid=Number(part.paid||0),amount=Number(part.amount||0),left=Math.max(0,amount-paid),state=left<=0?"Lunas":part.dueDate<today()?"Terlambat":"Belum dibayar";return '<div class="installment-detail-row"><div><strong>Cicilan '+part.number+'</strong><small>'+dateText(part.dueDate)+' · '+state+'</small></div><div class="amount">'+money(amount)+'<small>Terbayar '+money(paid)+' · Sisa '+money(left)+'</small></div></div>'}).join("")+'<div class="installment-detail-total"><span>Total '+money(d.amount)+'</span><span>Sisa '+money(remaining(d))+'</span></div></section>';
  const paymentHtml=p.length?'<h4 style="margin:0 0 8px">Riwayat pembayaran aktual</h4>'+p.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>'<div class="history-line"><div><strong>'+dateText(x.date)+'</strong><span style="color:var(--muted)">'+escapeHtml(x.note||"Pembayaran")+'</span></div><strong>'+money(x.amount)+'</strong></div>').join(""):'<div class="empty">Belum ada pembayaran yang dicatat.</div>';
  $("historyContent").innerHTML=scheduleHtml+paymentHtml;showModal("historyModal");
-}itor+" berhasil berkurang "+money(amount)+".");
- }catch(err){console.error(err);toast(err.message==="Pembayaran melebihi sisa utang"?err.message:"Gagal mencatat pembayaran.")}
-});
-function showHistory(d){
- $("historyTitle").textContent="Riwayat · "+d.creditor;const p=d.payments||[];
- $("historyContent").innerHTML=p.length?p.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map((x,i)=>'<div class="history-line"><div><strong>'+dateText(x.date)+'</strong><span style="color:var(--muted)">'+escapeHtml(x.note||"Pembayaran")+'</span></div><strong>'+money(x.amount)+'</strong></div>').join(""):'<div class="empty">Belum ada pembayaran.</div>';
- showModal("historyModal");
 }
 $("closeHistory").addEventListener("click",()=>hideModal("historyModal"));
 $("debtTableBody").addEventListener("click",async e=>{
