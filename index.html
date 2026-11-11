@@ -65,7 +65,7 @@ body{font-size:15px}
 .bulk-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}
 .bulk-toolbar span{font-size:13px;color:var(--muted);font-weight:700}
 .bulk-table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px}
-.bulk-table{width:100%;min-width:900px;border-collapse:collapse}
+.bulk-table{width:100%;min-width:1040px;border-collapse:collapse}
 .bulk-table th{background:#f7f8fa;color:var(--muted);font-size:11px;text-align:left;padding:11px 9px;white-space:nowrap}
 .bulk-table td{padding:8px;border-top:1px solid var(--line);vertical-align:middle}
 .bulk-table input{width:100%;min-width:115px;padding:10px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px}
@@ -344,7 +344,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(103,151,211,.1
 <div class="overlay" id="bulkDebtModal"><div class="modal bulk-modal">
  <h3>Input utang massal</h3><p class="intro">Masukkan beberapa catatan sekaligus. Setiap baris akan disimpan sebagai utang terpisah dengan detail lengkap.</p>
  <div class="bulk-toolbar"><span id="bulkRowCount">0 baris</span><button type="button" class="btn" id="addBulkRow">＋ Tambah baris</button></div>
- <div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>Nama kreditur *</th><th>Nominal (Rp) *</th><th>Tanggal utang *</th><th>Jatuh tempo *</th><th>Catatan</th><th></th></tr></thead><tbody id="bulkDebtRows"></tbody></table></div>
+ <div class="bulk-table-wrap"><table class="bulk-table"><thead><tr><th>Nama kreditur *</th><th>Nominal (Rp) *</th><th>Tanggal utang *</th><th>Jatuh tempo pertama *</th><th>Jumlah cicilan</th><th>Catatan</th><th></th></tr></thead><tbody id="bulkDebtRows"></tbody></table></div>
  <div class="bulk-footnote">Kolom bertanda * wajib diisi. Maksimal 200 utang dalam satu kali penyimpanan.</div>
  <div class="modal-foot"><button type="button" class="btn" id="cancelBulkDebt">Batal</button><button type="button" class="btn primary" id="saveBulkDebt">Simpan semua utang</button></div>
 </div></div>
@@ -490,7 +490,7 @@ function renderActivity(){
 function render(){renderDashboard();renderTable();renderActivity();renderFinance();renderBudgets();renderGoals();renderReports();if($("view-calendar").classList.contains("active"))renderCalendar()}
 function makeBulkRow(){
  const tr=document.createElement("tr");
- tr.innerHTML='<td><input class="bulk-creditor" maxlength="80" placeholder="Nama kreditur" aria-label="Nama kreditur" required></td><td><input class="bulk-amount" type="number" min="1" step="1" placeholder="Nominal" aria-label="Nominal utang" required></td><td><input class="bulk-date" type="date" aria-label="Tanggal utang" required></td><td><input class="bulk-due" type="date" aria-label="Tanggal jatuh tempo" required></td><td><input class="bulk-notes" maxlength="500" placeholder="Catatan (opsional)" aria-label="Catatan"></td><td><button type="button" class="bulk-remove" aria-label="Hapus baris" title="Hapus baris">×</button></td>';
+ tr.innerHTML='<td><input class="bulk-creditor" maxlength="80" placeholder="Nama kreditur" aria-label="Nama kreditur" required></td><td><input class="bulk-amount" type="number" min="1" step="1" placeholder="Nominal" aria-label="Nominal utang" required></td><td><input class="bulk-date" type="date" aria-label="Tanggal utang" required></td><td><input class="bulk-due" type="date" aria-label="Jatuh tempo pertama" required></td><td><input class="bulk-installments" type="number" min="1" max="120" step="1" value="1" aria-label="Jumlah cicilan" required></td><td><input class="bulk-notes" maxlength="500" placeholder="Catatan (opsional)" aria-label="Catatan"></td><td><button type="button" class="bulk-remove" aria-label="Hapus baris" title="Hapus baris">×</button></td>';
  tr.querySelector(".bulk-date").value=today();tr.querySelector(".bulk-due").value=today();
  tr.querySelector(".bulk-remove").addEventListener("click",()=>{tr.remove();updateBulkCount()});
  $("bulkDebtRows").appendChild(tr);updateBulkCount();
@@ -506,17 +506,17 @@ $("saveBulkDebt").addEventListener("click",async()=>{
  const rows=[...$("bulkDebtRows").querySelectorAll("tr")];
  if(!rows.length){toast("Tambahkan minimal satu baris utang.");return}
  if(rows.length>200){toast("Maksimal 200 utang dalam satu kali penyimpanan.");return}
- const entries=rows.map((tr,i)=>({row:tr,creditor:tr.querySelector(".bulk-creditor").value.trim(),amount:Number(tr.querySelector(".bulk-amount").value),debtDate:tr.querySelector(".bulk-date").value,dueDate:tr.querySelector(".bulk-due").value,notes:tr.querySelector(".bulk-notes").value.trim(),index:i+1}));
- const invalid=entries.find(x=>!x.creditor||!Number.isFinite(x.amount)||x.amount<=0||!x.debtDate||!x.dueDate||x.dueDate<x.debtDate);
- if(invalid){toast("Periksa baris "+invalid.index+": lengkapi data wajib dan pastikan jatuh tempo tidak sebelum tanggal utang.");invalid.row.scrollIntoView({behavior:"smooth",block:"center"});return}
+ const entries=rows.map((tr,i)=>({row:tr,creditor:tr.querySelector(".bulk-creditor").value.trim(),amount:Number(tr.querySelector(".bulk-amount").value),debtDate:tr.querySelector(".bulk-date").value,dueDate:tr.querySelector(".bulk-due").value,installmentCount:Number.parseInt(tr.querySelector(".bulk-installments").value,10),notes:tr.querySelector(".bulk-notes").value.trim(),index:i+1}));
+ const invalid=entries.find(x=>!x.creditor||!Number.isFinite(x.amount)||x.amount<=0||!x.debtDate||!x.dueDate||x.dueDate<x.debtDate||!Number.isInteger(x.installmentCount)||x.installmentCount<1||x.installmentCount>120);
+ if(invalid){toast("Periksa baris "+invalid.index+": lengkapi data wajib dan pastikan jatuh tempo tidak sebelum tanggal utang dan jumlah cicilan 1–120.");invalid.row.scrollIntoView({behavior:"smooth",block:"center"});return}
  const btn=$("saveBulkDebt");btn.disabled=true;btn.textContent="Menyimpan...";
  try{
   const batch=writeBatch(db);
   entries.forEach(d=>{
    const debtDoc=doc(collection(db,...roomPath(),"debts"));
-   batch.set(debtDoc,{creditor:d.creditor,amount:d.amount,debtDate:d.debtDate,dueDate:d.dueDate,notes:d.notes,totalPaid:0,payments:[],createdAt:serverTimestamp()});
+   batch.set(debtDoc,{creditor:d.creditor,amount:d.amount,debtDate:d.debtDate,dueDate:d.dueDate,installments:makeInstallments(d.amount,d.dueDate,d.installmentCount),notes:d.notes,totalPaid:0,payments:[],createdAt:serverTimestamp()});
    const activityDoc=doc(collection(db,...roomPath(),"activities"));
-   batch.set(activityDoc,{type:"created",creditor:d.creditor,detail:"Catatan utang baru ditambahkan sebesar "+money(d.amount)+" (input massal).",createdAt:serverTimestamp(),createdAtClient:new Date().toISOString()});
+   batch.set(activityDoc,{type:"created",creditor:d.creditor,detail:"Catatan utang baru ditambahkan sebesar "+money(d.amount)+(d.installmentCount>1?" dengan "+d.installmentCount+" cicilan bulanan":"")+" (input massal).",createdAt:serverTimestamp(),createdAtClient:new Date().toISOString()});
   });
   await batch.commit();hideModal("bulkDebtModal");$("bulkDebtRows").innerHTML="";updateBulkCount();
   toast(entries.length+" utang berhasil disimpan.");showCelebration("sad","Nooo… "+entries.length+" utang baru!","Semua catatan berhasil masuk ke Tracker.");
