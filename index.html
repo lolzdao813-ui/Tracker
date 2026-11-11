@@ -302,7 +302,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(103,151,211,.1
   <div class="table-tools"><input class="search" id="searchInput" placeholder="Cari kreditur atau catatan..."><div class="filters">
    <button class="filter active" data-filter="all">Semua</button><button class="filter" data-filter="open">Belum lunas</button><button class="filter" data-filter="overdue">Terlambat</button><button class="filter" data-filter="paid">Lunas</button>
   </div></div>
-  <div class="table-wrap"><table class="debt-table"><thead><tr><th>KREDITUR</th><th>UTANG AWAL</th><th>DIBAYAR</th><th>SISA UTANG</th><th>JATUH TEMPO</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody id="debtTableBody"><tr><td colspan="7" class="empty">Memuat data...</td></tr></tbody></table></div>
+  <div class="table-wrap"><table class="debt-table"><thead><tr><th>KREDITUR</th><th>UTANG AWAL</th><th>DIBAYAR</th><th>SISA UTANG</th><th>JATUH TEMPO</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody id="debtTableBody"><tr><td colspan="8" class="empty">Memuat data...</td></tr></tbody></table></div>
  </section>
 </section>
 
@@ -336,6 +336,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(103,151,211,.1
   <div class="field"><label for="amount">Nominal utang (Rp) *</label><input id="amount" type="number" min="1" step="1" required></div>
   <div class="field"><label for="debtDate">Tanggal utang *</label><input id="debtDate" type="date" required></div>
   <div class="field"><label for="dueDate">Tanggal jatuh tempo *</label><input id="dueDate" type="date" required></div>
+  <div class="field"><label for="installmentCount">Jumlah pembayaran</label><input id="installmentCount" type="number" min="1" max="120" step="1" value="1" required><small class="subtext">1 = sekali bayar. Lebih dari 1 = cicilan bulanan dengan nominal sama.</small></div>
   <div class="field full"><label for="notes">Catatan (opsional)</label><textarea id="notes" maxlength="500" placeholder="Keterangan tambahan"></textarea></div>
  </div><div class="modal-foot"><button type="button" class="btn" id="cancelDebt">Batal</button><button type="submit" class="btn primary" id="saveDebt">Simpan utang</button></div></form>
 </div></div>
@@ -410,8 +411,19 @@ async function cleanupOrphanedDebtTransactions(){
  }
  return orphaned.length;
 }
+function addMonthsClamped(dateString,months){
+ const [y,m,d]=dateString.split("-").map(Number),target=new Date(y,m-1+months,1),last=new Date(target.getFullYear(),target.getMonth()+1,0).getDate();
+ return target.getFullYear()+"-"+String(target.getMonth()+1).padStart(2,"0")+"-"+String(Math.min(d,last)).padStart(2,"0");
+}
+function makeInstallments(amount,firstDue,count){
+ const base=Math.floor(amount/count),items=[];
+ for(let i=0;i<count;i++)items.push({number:i+1,dueDate:addMonthsClamped(firstDue,i),amount:i===count-1?amount-base*(count-1):base,paid:0});
+ return items;
+}
+function debtSchedule(d){return Array.isArray(d.installments)&&d.installments.length?d.installments:[{number:1,dueDate:d.dueDate,amount:Number(d.amount||0),paid:Number(d.totalPaid||0)}]}
+function nextInstallment(d){return debtSchedule(d).find(x=>Number(x.paid||0)<Number(x.amount||0))}
 function remaining(d){return Math.max(0,Number(d.amount||0)-Number(d.totalPaid||0))}
-function status(d){if(remaining(d)<=0)return "paid";return d.dueDate<today()?"overdue":"open"}
+function status(d){if(remaining(d)<=0)return "paid";const n=nextInstallment(d);return n&&n.dueDate<today()?"overdue":"open"}
 function statusName(s){return s==="paid"?"Lunas":s==="overdue"?"Terlambat":"Belum lunas"}
 function statusBadge(s){return '<span class="badge '+s+'">'+statusName(s)+'</span>'}
 function showModal(id){$(id).classList.add("show")}
@@ -446,7 +458,7 @@ function renderTable(){
  const rows=debts.filter(d=>(activeFilter==="all"||status(d)===activeFilter)&&(String(d.creditor||"")+" "+String(d.notes||"")).toLowerCase().includes(q)).sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
  $("debtTableBody").innerHTML=rows.length?rows.map(d=>{
  const pct=d.amount?Math.min(100,Number(d.totalPaid||0)/Number(d.amount)*100):0;
- return '<tr><td><div class="person">'+escapeHtml(d.creditor)+'</div><div class="subtext">'+escapeHtml(d.notes||"Tanpa catatan")+'</div></td><td class="money">'+money(d.amount)+'</td><td><div class="money">'+money(d.totalPaid||0)+'</div><div class="progress"><span style="width:'+pct+'%"></span></div></td><td class="money">'+money(remaining(d))+'</td><td>'+dateText(d.dueDate)+'</td><td>'+statusBadge(status(d))+'</td><td><div class="row-actions">'+(status(d)!=="paid"?'<button class="btn small primary" data-act="pay" data-id="'+d.id+'">Bayar</button>':'')+'<button class="btn small" data-act="history" data-id="'+d.id+'">Detail</button><button class="btn small" data-act="edit" data-id="'+d.id+'">Edit</button><button class="btn small danger" data-act="delete" data-id="'+d.id+'">Hapus</button></div></td></tr>'
+ const schedule=debtSchedule(d),next=nextInstallment(d);return '<tr><td><div class="person">'+escapeHtml(d.creditor)+'</div><div class="subtext">'+escapeHtml(d.notes||"Tanpa catatan")+'</div></td><td class="money">'+money(d.amount)+'</td><td><div class="money">'+money(d.totalPaid||0)+'</div><div class="progress"><span style="width:'+pct+'%"></span></div></td><td class="money">'+money(remaining(d))+'</td><td>'+(schedule.length>1?(schedule.length+' kali · '+(schedule.filter(x=>Number(x.paid||0)>=Number(x.amount||0)).length)+' lunas'):'1 kali')+'</td><td>'+(next?dateText(next.dueDate):'Lunas')+'</td><td>'+statusBadge(status(d))+'</td><td><div class="row-actions">'+(status(d)!=="paid"?'<button class="btn small primary" data-act="pay" data-id="'+d.id+'">Bayar</button>':'')+'<button class="btn small" data-act="history" data-id="'+d.id+'">Detail</button><button class="btn small" data-act="edit" data-id="'+d.id+'">Edit</button><button class="btn small danger" data-act="delete" data-id="'+d.id+'">Hapus</button></div></td></tr>'
  }).join(""):'<tr><td colspan="7" class="empty">Tidak ada catatan yang cocok.</td></tr>';
 }
 let selectedCalendarDay=today();
@@ -511,12 +523,12 @@ $("saveBulkDebt").addEventListener("click",async()=>{
  }catch(err){console.error(err);toast("Gagal menyimpan utang massal. Tidak ada data yang disimpan jika proses batch gagal.");}
  finally{btn.disabled=false;btn.textContent="Simpan semua utang"}
 });
-function resetDebtForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("debtModalTitle").textContent="Tambah utang";$("saveDebt").textContent="Simpan utang"}
+function resetDebtForm(){editingId=null;$("debtForm").reset();$("debtDate").value=today();$("dueDate").value=today();$("installmentCount").value=1;$("debtModalTitle").textContent="Tambah utang";$("saveDebt").textContent="Simpan utang"}
 function openAdd(){resetDebtForm();showModal("debtModal")}
-function openEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("notes").value=d.notes||"";$("debtModalTitle").textContent="Edit utang";$("saveDebt").textContent="Simpan perubahan";showModal("debtModal")}
+function openEdit(d){editingId=d.id;$("creditor").value=d.creditor;$("amount").value=d.amount;$("debtDate").value=d.debtDate;$("dueDate").value=d.dueDate;$("installmentCount").value=Array.isArray(d.installments)?d.installments.length:1;$("notes").value=d.notes||"";$("debtModalTitle").textContent="Edit utang";$("saveDebt").textContent="Simpan perubahan";showModal("debtModal")}
 $("quickAdd").addEventListener("click",openAdd);$("addDebtBtn").addEventListener("click",openAdd);$("cancelDebt").addEventListener("click",()=>hideModal("debtModal"));
 $("debtForm").addEventListener("submit",async e=>{
- e.preventDefault();const data={creditor:$("creditor").value.trim(),amount:Number($("amount").value),debtDate:$("debtDate").value,dueDate:$("dueDate").value,notes:$("notes").value.trim()};
+ e.preventDefault();const data={creditor:$("creditor").value.trim(),amount:Number($("amount").value),debtDate:$("debtDate").value,dueDate:$("dueDate").value,notes:$("notes").value.trim()};const installmentCount=Math.max(1,Math.min(120,Number.parseInt($("installmentCount").value,10)||1));data.installments=makeInstallments(data.amount,data.dueDate,installmentCount);
  if(!data.creditor||data.amount<=0||!data.debtDate||!data.dueDate)return;
  if(data.dueDate<data.debtDate){toast("Jatuh tempo tidak boleh sebelum tanggal utang.");return}
  const wasEditing=!!editingId;
@@ -535,7 +547,7 @@ $("confirmPayment").addEventListener("click",async()=>{
  const d=debts.find(x=>x.id===payingId),isFullPayment=d&&amount>=remaining(d);
  try{
   const expenseRef=doc(collection(db,...roomPath(),"transactions"));
-  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments});tx.set(expenseRef,{type:"expense",title:"Pembayaran utang: "+(d?.creditor||"Kreditur"),amount,date,category:"Pembayaran Utang",note:note||"Pembayaran utang otomatis",sourceDebtId:payingId,createdAt:serverTimestamp()})});
+  await runTransaction(db,async tx=>{const ref=debtRef(payingId),snap=await tx.get(ref);if(!snap.exists())throw new Error("Catatan tidak ditemukan");const item=snap.data(),left=Math.max(0,Number(item.amount)-Number(item.totalPaid||0));if(amount>left)throw new Error("Pembayaran melebihi sisa utang");const payments=[...(item.payments||[]),{amount,date,note,recordedAt:new Date().toISOString()}];let installments=Array.isArray(item.installments)?item.installments.map(x=>({...x})):null;let allocation=amount;if(installments){for(const part of installments){const due=Math.max(0,Number(part.amount||0)-Number(part.paid||0));const used=Math.min(due,allocation);part.paid=Number(part.paid||0)+used;allocation-=used;if(allocation<=0)break;}}tx.update(ref,{totalPaid:Number(item.totalPaid||0)+amount,payments,...(installments?{installments}:{})});tx.set(expenseRef,{type:"expense",title:"Pembayaran utang: "+(d?.creditor||"Kreditur"),amount,date,category:"Pembayaran Utang",note:note||"Pembayaran utang otomatis",sourceDebtId:payingId,createdAt:serverTimestamp()})});
   await logActivity("payment",d?.creditor||"Kreditur","Pembayaran "+money(amount)+" dicatat"+(note?" ("+note+")":"")+".");hideModal("paymentModal");toast("Pembayaran berhasil dicatat dan masuk ke pengeluaran.");
   if(isFullPayment)showCelebration("win","YESSS! LUNAS! 🎉","Satu utang berhasil diselesaikan. Keren!");
   else showCelebration("happy","Yess! Ada kemajuan!","Sisa utang "+d.creditor+" berhasil berkurang "+money(amount)+".");
