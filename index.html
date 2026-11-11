@@ -149,6 +149,67 @@ body:after{content:"";position:fixed;z-index:-1;pointer-events:none;width:560px;
 .view:after{content:"";display:block;clear:both}
 @media(max-width:720px){body:after{width:340px;height:340px;right:-230px;top:30%}.topbar{margin-left:0;margin-right:0;padding:13px 12px}}
 @media(prefers-reduced-motion:reduce){body{background-attachment:scroll}}
+
+/* Premium 3D glassmorphism layer */
+:root{--ice:#dcecff;--glow:rgba(108,157,220,.22)}
+html{scroll-behavior:smooth}
+body{perspective:1200px}
+.app-main{transform-style:preserve-3d}
+.sidebar{box-shadow:12px 0 38px rgba(18,35,62,.16);border-right:1px solid rgba(255,255,255,.08)}
+.brand-logo{transition:transform .55s cubic-bezier(.2,.8,.2,1),filter .55s}
+.brand-logo:hover{transform:translateY(-4px) rotate(-1.5deg) scale(1.025);filter:drop-shadow(0 15px 22px rgba(0,0,0,.24))}
+.stat,.panel,.insight-strip,.goal-card,.savings-intro,.topbar{
+ position:relative;transform-style:preserve-3d;transition:transform .28s cubic-bezier(.2,.75,.25,1),box-shadow .28s,border-color .28s;
+}
+.stat,.panel,.goal-card{overflow:hidden}
+.stat:before,.panel:before,.goal-card:before{
+ content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+ background:linear-gradient(120deg,rgba(255,255,255,.75),transparent 36%,rgba(175,207,244,.13) 70%,transparent);
+ transition:opacity .3s;z-index:0
+}
+.stat:hover,.panel:hover,.goal-card:hover{
+ transform:translateY(-5px) rotateX(1deg);
+ box-shadow:0 18px 38px rgba(35,62,101,.13),0 5px 12px rgba(35,62,101,.06);
+ border-color:rgba(147,180,222,.65)
+}
+.stat:hover:before,.panel:hover:before,.goal-card:hover:before{opacity:1}
+.stat>* ,.panel>* ,.goal-card>*{position:relative;z-index:1}
+.stat{box-shadow:0 10px 24px rgba(36,55,86,.08),inset 0 1px 0 rgba(255,255,255,.95)}
+.stat:after{transition:transform .45s, border-color .45s}
+.stat:hover:after{transform:scale(1.18) translate(-5px,3px);border-color:#e5effb}
+.panel{box-shadow:0 12px 28px rgba(36,55,86,.075),inset 0 1px 0 rgba(255,255,255,.95)}
+.tab{transition:transform .22s,background .22s,box-shadow .22s}
+.tab.active{box-shadow:0 9px 22px rgba(28,70,125,.28),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn{transition:transform .18s,box-shadow .18s,background .18s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 15px rgba(33,53,83,.12)}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn.primary{box-shadow:0 5px 13px rgba(46,86,136,.18)}
+.overlay.show .modal{animation:modal3dIn .38s cubic-bezier(.18,.85,.25,1.18) both}
+@keyframes modal3dIn{from{opacity:0;transform:perspective(900px) translateY(24px) rotateX(-7deg) scale(.94)}to{opacity:1;transform:perspective(900px) translateY(0) rotateX(0) scale(1)}}
+.view.active{animation:viewLift .42s cubic-bezier(.2,.7,.25,1) both}
+@keyframes viewLift{from{opacity:0;transform:translateY(12px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
+.sidebar-mascot{display:inline-block;transform-origin:50% 80%;animation:mascotFloat 3.8s ease-in-out infinite;filter:drop-shadow(0 12px 10px rgba(0,0,0,.2))}
+@keyframes mascotFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.insight-main{position:relative;overflow:hidden}
+.insight-main:after{content:"";position:absolute;width:210px;height:210px;border:1px solid rgba(255,255,255,.13);border-radius:50%;right:-60px;top:-90px;box-shadow:0 0 0 22px rgba(255,255,255,.035),0 0 0 48px rgba(255,255,255,.025);pointer-events:none}
+.progress span,.big-progress span,.budget-bar span,.category-bar span,.trend-bar{transition:width .7s cubic-bezier(.2,.75,.25,1),height .7s cubic-bezier(.2,.75,.25,1)}
+.due-row,.activity,.mini-activity-row,.attention-item{transition:background .2s,transform .2s;padding-left:5px;padding-right:5px;border-radius:8px}
+.due-row:hover,.activity:hover,.mini-activity-row:hover,.attention-item:hover{background:rgba(225,236,250,.48);transform:translateX(3px)}
+input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(103,151,211,.17)!important;border-color:#8baed9!important}
+.toast{box-shadow:0 14px 34px rgba(20,34,55,.28);backdrop-filter:blur(12px)}
+@media(hover:hover) and (pointer:fine){
+ .stat,.panel,.goal-card{will-change:transform}
+}
+@media(max-width:720px){
+ .stat:hover,.panel:hover,.goal-card:hover{transform:translateY(-2px)}
+ .sidebar{box-shadow:0 -10px 30px rgba(18,35,62,.2)}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+ .stat:hover,.panel:hover,.goal-card:hover,.btn:hover,.tab:hover{transform:none}
+}
+
 </style>
 </head>
 <body>
@@ -499,6 +560,18 @@ async function boot(){
  catch(err){console.error(err);document.body.innerHTML='<main class="shell"><section class="panel"><h2>Tracker tidak dapat terhubung</h2><p>Periksa koneksi internet, Firebase Authentication, dan Firestore Rules.</p><p style="color:#b94747;font-size:12px">'+escapeHtml(err.message)+'</p></section></main>'}
 }
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("show")}));
+
+/* Gentle pointer depth on desktop; disabled for touch and reduced-motion users */
+if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches && window.matchMedia("(hover:hover) and (pointer:fine)").matches){
+ document.querySelectorAll(".stat,.panel,.goal-card").forEach(card=>{
+  card.addEventListener("pointermove",e=>{
+   const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+   card.style.transform="translateY(-5px) rotateX("+(-y*2.2)+"deg) rotateY("+(x*2.6)+"deg)";
+  });
+  card.addEventListener("pointerleave",()=>{card.style.transform=""});
+ });
+}
+
 boot();
 </script>
 </body></html>
