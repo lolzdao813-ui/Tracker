@@ -70,61 +70,68 @@ let skipped = 0;
 
 for (const debtDoc of debtsSnapshot.docs) {
   const debt = debtDoc.data();
-  if (!debt.dueDate || Number(debt.amount || 0) - Number(debt.totalPaid || 0) <= 0) {
-    continue;
+  const installments = Array.isArray(debt.installments) && debt.installments.length
+    ? debt.installments
+    : [{ number: 1, dueDate: debt.dueDate, amount: Number(debt.amount || 0), paid: Number(debt.totalPaid || 0) }];
+
+  for (const installment of installments) {
+    const outstanding = Math.max(0, Number(installment.amount || 0) - Number(installment.paid || 0));
+    if (!installment.dueDate || outstanding <= 0) continue;
+
+    const dueDate = new Date(`${installment.dueDate}T00:00:00+07:00`);
+    if (Number.isNaN(dueDate.getTime())) continue;
+
+    const daysUntilDue = Math.round((dueDate - todayDate) / 86400000);
+    const reminderType = daysUntilDue === 3 ? "H-3" : daysUntilDue === 0 ? "H" : null;
+    if (!reminderType) continue;
+
+    const logId = Buffer.from(`${debtDoc.id}_installment_${installment.number}_${installment.dueDate}_${reminderType}`).toString("base64url");
+    const logRef = db.collection("rooms").doc(roomId).collection("reminderLogs").doc(logId);
+    const existingLog = await logRef.get();
+    if (existingLog.exists) {
+      skipped++;
+      continue;
+    }
+
+    const title = reminderType === "H" ? "⚠️ Jatuh tempo cicilan hari ini" : "🔔 Pengingat cicilan H-3";
+    const payload = {
+      username: "Tracker Reminder",
+      embeds: [{
+        title,
+        color: reminderType === "H" ? 15158332 : 15844367,
+        fields: [
+          { name: "Pemberi utang", value: String(debt.creditor || "Tidak diketahui").slice(0, 1024), inline: true },
+          { name: "Cicilan", value: `${installment.number || 1}/${installments.length}`, inline: true },
+          { name: "Nominal cicilan", value: formatRupiah(outstanding), inline: true },
+          { name: "Jatuh tempo", value: installment.dueDate, inline: true },
+          { name: "Sisa total utang", value: formatRupiah(Math.max(0, Number(debt.amount || 0) - Number(debt.totalPaid || 0))), inline: true }
+        ],
+        footer: { text: "Pengingat otomatis dari Tracker" },
+        timestamp: new Date().toISOString(),
+      }],
+      allowed_mentions: { parse: [] },
+    };
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Discord webhook failed (${response.status}): ${body.slice(0, 500)}`);
+    }
+
+    await logRef.set({
+      debtId: debtDoc.id,
+      installmentNumber: installment.number || 1,
+      dueDate: installment.dueDate,
+      reminderType,
+      sentAt: FieldValue.serverTimestamp(),
+    });
+    sent++;
   }
-
-  const dueDate = new Date(`${debt.dueDate}T00:00:00+07:00`);
-  if (Number.isNaN(dueDate.getTime())) continue;
-
-  const daysUntilDue = Math.round((dueDate - todayDate) / 86400000);
-  const reminderType = daysUntilDue === 3 ? "H-3" : daysUntilDue === 0 ? "H" : null;
-  if (!reminderType) continue;
-
-  const logId = Buffer.from(`${debtDoc.id}_${debt.dueDate}_${reminderType}`).toString("base64url");
-  const logRef = db.collection("rooms").doc(roomId).collection("reminderLogs").doc(logId);
-  const existingLog = await logRef.get();
-  if (existingLog.exists) {
-    skipped++;
-    continue;
-  }
-
-  const remaining = Math.max(0, Number(debt.amount || 0) - Number(debt.totalPaid || 0));
-  const title = reminderType === "H" ? "⚠️ Jatuh tempo hari ini" : "🔔 Pengingat jatuh tempo H-3";
-  const payload = {
-    username: "Tracker Reminder",
-    embeds: [{
-      title,
-      color: reminderType === "H" ? 15158332 : 15844367,
-      fields: [
-        { name: "Pemberi utang", value: String(debt.creditor || "Tidak diketahui").slice(0, 1024), inline: true },
-        { name: "Sisa utang", value: formatRupiah(remaining), inline: true },
-        { name: "Jatuh tempo", value: debt.dueDate, inline: true },
-      ],
-      footer: { text: "Pengingat otomatis dari Tracker" },
-      timestamp: new Date().toISOString(),
-    }],
-    allowed_mentions: { parse: [] },
-  };
-
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Discord webhook failed (${response.status}): ${body.slice(0, 500)}`);
-  }
-
-  await logRef.set({
-    debtId: debtDoc.id,
-    dueDate: debt.dueDate,
-    reminderType,
-    sentAt: FieldValue.serverTimestamp(),
-  });
-  sent++;
 }
 
 console.log(`Reminder check complete. Sent: ${sent}; already sent: ${skipped}; date (WIB): ${today}`);
